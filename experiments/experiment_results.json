@@ -1,0 +1,20 @@
+[
+  {
+    "subset_size": 100,
+    "num_traces": 957,
+    "num_skills": 130,
+    "coverage": 1.0
+  },
+  {
+    "subset_size": 250,
+    "num_traces": 2502,
+    "num_skills": 141,
+    "coverage": 1.0
+  },
+  {
+    "subset_size": 500,
+    "num_traces": 4972,
+    "num_skills": 158,
+    "coverage": 1.0
+  }
+]

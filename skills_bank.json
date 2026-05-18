@@ -1,0 +1,923 @@
+[
+  {
+    "skill_id": "skill_0",
+    "sequence": [
+      "WebSearch",
+      "WebSearch"
+    ],
+    "support": 3897,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "WebSearch",
+        "input_mapping": {},
+        "static_inputs": {
+          "query": "DOUTOR NICHIRES Holdings newly opened affiliated Doutor Coffee Shop stores domestically first half 2026",
+          "type": "search",
+          "sources": null
+        }
+      },
+      {
+        "tool_name": "WebSearch",
+        "input_mapping": {},
+        "static_inputs": {
+          "type": "open_page",
+          "url": "https://www.dnh.co.jp/index.html"
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_1",
+    "sequence": [
+      "WebSearch",
+      "WebSearch",
+      "WebSearch"
+    ],
+    "support": 3216,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "WebSearch",
+        "input_mapping": {},
+        "static_inputs": {
+          "query": "DOUTOR NICHIRES Holdings newly opened affiliated Doutor Coffee Shop stores domestically first half 2026",
+          "type": "search",
+          "sources": null
+        }
+      },
+      {
+        "tool_name": "WebSearch",
+        "input_mapping": {},
+        "static_inputs": {
+          "type": "open_page",
+          "url": "https://www.dnh.co.jp/index.html"
+        }
+      },
+      {
+        "tool_name": "WebSearch",
+        "input_mapping": {},
+        "static_inputs": {
+          "type": "open_page",
+          "url": "https://www.dnh.co.jp/html/pdf/result_q2_251014_English.pdf"
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_2",
+    "sequence": [
+      "google_search",
+      "google_search"
+    ],
+    "support": 2966,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "google_search",
+        "input_mapping": {},
+        "static_inputs": {
+          "query": ""
+        }
+      },
+      {
+        "tool_name": "google_search",
+        "input_mapping": {},
+        "static_inputs": {
+          "query": "Tupras 2023 consolidated financial statements cash outflows purchase of property plant and equipment"
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_3",
+    "sequence": [
+      "WebSearch",
+      "WebSearch",
+      "WebSearch",
+      "WebSearch"
+    ],
+    "support": 2667,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "WebSearch",
+        "input_mapping": {},
+        "static_inputs": {
+          "query": "DOUTOR NICHIRES Holdings newly opened affiliated Doutor Coffee Shop stores domestically first half 2026",
+          "type": "search",
+          "sources": null
+        }
+      },
+      {
+        "tool_name": "WebSearch",
+        "input_mapping": {},
+        "static_inputs": {
+          "type": "open_page",
+          "url": "https://www.dnh.co.jp/index.html"
+        }
+      },
+      {
+        "tool_name": "WebSearch",
+        "input_mapping": {},
+        "static_inputs": {
+          "type": "open_page",
+          "url": "https://www.dnh.co.jp/html/pdf/result_q2_251014_English.pdf"
+        }
+      },
+      {
+        "tool_name": "WebSearch",
+        "input_mapping": {
+          "query": {
+            "source_step": 0,
+            "source_key": "auto_detected"
+          },
+          "sources": {
+            "source_step": 0,
+            "source_key": "auto_detected"
+          }
+        },
+        "static_inputs": {
+          "type": "find_in_page",
+          "pattern": "Doutor Coffee Shop",
+          "url": "https://www.dnh.co.jp/html/pdf/supple_q2_251014.pdf"
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_4",
+    "sequence": [
+      "google_search",
+      "google_search",
+      "google_search"
+    ],
+    "support": 2458,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "google_search",
+        "input_mapping": {},
+        "static_inputs": {
+          "query": ""
+        }
+      },
+      {
+        "tool_name": "google_search",
+        "input_mapping": {},
+        "static_inputs": {
+          "query": "Tupras 2023 consolidated financial statements cash outflows purchase of property plant and equipment"
+        }
+      },
+      {
+        "tool_name": "google_search",
+        "input_mapping": {},
+        "static_inputs": {
+          "query": "T\u00fcrkiye Petrol Rafinerileri A.\u015e. 2023 cash flow from investing activities"
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_5",
+    "sequence": [
+      "WebSearch",
+      "WebSearch",
+      "WebSearch",
+      "WebSearch",
+      "WebSearch"
+    ],
+    "support": 2239,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "WebSearch",
+        "input_mapping": {},
+        "static_inputs": {
+          "query": "DOUTOR NICHIRES Holdings newly opened affiliated Doutor Coffee Shop stores domestically first half 2026",
+          "type": "search",
+          "sources": null
+        }
+      },
+      {
+        "tool_name": "WebSearch",
+        "input_mapping": {},
+        "static_inputs": {
+          "type": "open_page",
+          "url": "https://www.dnh.co.jp/index.html"
+        }
+      },
+      {
+        "tool_name": "WebSearch",
+        "input_mapping": {},
+        "static_inputs": {
+          "type": "open_page",
+          "url": "https://www.dnh.co.jp/html/pdf/result_q2_251014_English.pdf"
+        }
+      },
+      {
+        "tool_name": "WebSearch",
+        "input_mapping": {
+          "query": {
+            "source_step": 0,
+            "source_key": "auto_detected"
+          },
+          "sources": {
+            "source_step": 0,
+            "source_key": "auto_detected"
+          }
+        },
+        "static_inputs": {
+          "type": "find_in_page",
+          "pattern": "Doutor Coffee Shop",
+          "url": "https://www.dnh.co.jp/html/pdf/supple_q2_251014.pdf"
+        }
+      },
+      {
+        "tool_name": "WebSearch",
+        "input_mapping": {
+          "query": {
+            "source_step": 0,
+            "source_key": "auto_detected"
+          },
+          "sources": {
+            "source_step": 0,
+            "source_key": "auto_detected"
+          }
+        },
+        "static_inputs": {
+          "type": "search"
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_6",
+    "sequence": [
+      "google_search",
+      "google_search",
+      "google_search",
+      "google_search"
+    ],
+    "support": 2015,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "google_search",
+        "input_mapping": {},
+        "static_inputs": {
+          "query": ""
+        }
+      },
+      {
+        "tool_name": "google_search",
+        "input_mapping": {},
+        "static_inputs": {
+          "query": "Tupras 2023 consolidated financial statements cash outflows purchase of property plant and equipment"
+        }
+      },
+      {
+        "tool_name": "google_search",
+        "input_mapping": {},
+        "static_inputs": {
+          "query": "T\u00fcrkiye Petrol Rafinerileri A.\u015e. 2023 cash flow from investing activities"
+        }
+      },
+      {
+        "tool_name": "google_search",
+        "input_mapping": {},
+        "static_inputs": {
+          "query": "T\u00fcrkiye Petrol Rafinerileri AS 2023 annual report cash flow statement"
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_7",
+    "sequence": [
+      "mcp__daloopa__discover_company_series",
+      "mcp__daloopa__get_company_fundamentals"
+    ],
+    "support": 1792,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "mcp__daloopa__discover_company_series",
+        "input_mapping": {},
+        "static_inputs": {
+          "company_id": 246123,
+          "keywords": [
+            "Doutor Coffee Shop",
+            "newly opened",
+            "affiliated",
+            "domestic"
+          ],
+          "periods": [
+            "2026H1"
+          ]
+        }
+      },
+      {
+        "tool_name": "mcp__daloopa__get_company_fundamentals",
+        "input_mapping": {},
+        "static_inputs": {
+          "company_id": 246123,
+          "periods": [
+            "2026H1"
+          ],
+          "series_ids": [
+            7390237
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_8",
+    "sequence": [
+      "mcp__daloopa__discover_companies",
+      "mcp__daloopa__discover_company_series"
+    ],
+    "support": 1733,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "mcp__daloopa__discover_companies",
+        "input_mapping": {},
+        "static_inputs": {
+          "keywords": [
+            "DOUTOR NICHIRES",
+            "Doutor Coffee"
+          ]
+        }
+      },
+      {
+        "tool_name": "mcp__daloopa__discover_company_series",
+        "input_mapping": {
+          "company_id": {
+            "source_step": 0,
+            "source_key": "auto_detected"
+          }
+        },
+        "static_inputs": {
+          "keywords": [
+            "Doutor Coffee Shop",
+            "newly opened",
+            "affiliated",
+            "domestic"
+          ],
+          "periods": [
+            "2026H1"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_9",
+    "sequence": [
+      "google_search",
+      "google_search",
+      "google_search",
+      "google_search",
+      "google_search"
+    ],
+    "support": 1670,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "google_search",
+        "input_mapping": {},
+        "static_inputs": {
+          "query": "National Bank of Canada Q1 2017 results cost savings"
+        }
+      },
+      {
+        "tool_name": "google_search",
+        "input_mapping": {},
+        "static_inputs": {
+          "query": "National Bank of Canada Q1 2017 investor presentation cost savings"
+        }
+      },
+      {
+        "tool_name": "google_search",
+        "input_mapping": {},
+        "static_inputs": {
+          "query": "National Bank of Canada fiscal 2017 cumulative cost savings track"
+        }
+      },
+      {
+        "tool_name": "google_search",
+        "input_mapping": {},
+        "static_inputs": {
+          "query": "National Bank of Canada 2016 restructuring plan savings"
+        }
+      },
+      {
+        "tool_name": "google_search",
+        "input_mapping": {},
+        "static_inputs": {
+          "query": "National Bank of Canada Q1 2017 conference call cost savings"
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_10",
+    "sequence": [
+      "discover_company_series",
+      "get_company_fundamentals"
+    ],
+    "support": 1625,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "discover_company_series",
+        "input_mapping": {},
+        "static_inputs": {
+          "company_id": 246123,
+          "keywords": [
+            "newly opened",
+            "affiliated",
+            "Doutor Coffee Shop",
+            "domestically",
+            "stores"
+          ],
+          "periods": [
+            "2026H1"
+          ]
+        }
+      },
+      {
+        "tool_name": "get_company_fundamentals",
+        "input_mapping": {},
+        "static_inputs": {
+          "company_id": 246123,
+          "periods": [
+            "2026H1"
+          ],
+          "series_ids": [
+            7390237
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_11",
+    "sequence": [
+      "discover_companies",
+      "discover_company_series"
+    ],
+    "support": 1601,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "discover_companies",
+        "input_mapping": {},
+        "static_inputs": {
+          "keywords": [
+            "DOUTOR NICHIRES Holdings"
+          ]
+        }
+      },
+      {
+        "tool_name": "discover_company_series",
+        "input_mapping": {
+          "company_id": {
+            "source_step": 0,
+            "source_key": "auto_detected"
+          }
+        },
+        "static_inputs": {
+          "keywords": [
+            "Doutor Coffee Shop",
+            "opened",
+            "stores",
+            "newly"
+          ],
+          "periods": [
+            "2026Q1",
+            "2026Q2",
+            "2025Q1",
+            "2025Q2"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_12",
+    "sequence": [
+      "mcp__daloopa__discover_companies",
+      "mcp__daloopa__discover_company_series",
+      "mcp__daloopa__get_company_fundamentals"
+    ],
+    "support": 1567,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "mcp__daloopa__discover_companies",
+        "input_mapping": {},
+        "static_inputs": {
+          "keywords": [
+            "DOUTOR NICHIRES",
+            "Doutor Coffee"
+          ]
+        }
+      },
+      {
+        "tool_name": "mcp__daloopa__discover_company_series",
+        "input_mapping": {
+          "company_id": {
+            "source_step": 0,
+            "source_key": "auto_detected"
+          }
+        },
+        "static_inputs": {
+          "keywords": [
+            "Doutor Coffee Shop",
+            "newly opened",
+            "affiliated",
+            "domestic"
+          ],
+          "periods": [
+            "2026H1"
+          ]
+        }
+      },
+      {
+        "tool_name": "mcp__daloopa__get_company_fundamentals",
+        "input_mapping": {
+          "company_id": {
+            "source_step": 0,
+            "source_key": "auto_detected"
+          }
+        },
+        "static_inputs": {
+          "periods": [
+            "2026H1"
+          ],
+          "series_ids": [
+            7390237
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_13",
+    "sequence": [
+      "discover_companies",
+      "discover_company_series",
+      "get_company_fundamentals"
+    ],
+    "support": 1393,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "discover_companies",
+        "input_mapping": {},
+        "static_inputs": {
+          "keywords": [
+            "DOUTOR NICHIRES Holdings",
+            "3087"
+          ]
+        }
+      },
+      {
+        "tool_name": "discover_company_series",
+        "input_mapping": {
+          "company_id": {
+            "source_step": 0,
+            "source_key": "auto_detected"
+          }
+        },
+        "static_inputs": {
+          "keywords": [
+            "newly opened",
+            "affiliated",
+            "Doutor Coffee Shop",
+            "domestically",
+            "stores"
+          ],
+          "periods": [
+            "2026H1"
+          ]
+        }
+      },
+      {
+        "tool_name": "get_company_fundamentals",
+        "input_mapping": {
+          "company_id": {
+            "source_step": 0,
+            "source_key": "auto_detected"
+          }
+        },
+        "static_inputs": {
+          "periods": [
+            "2026H1"
+          ],
+          "series_ids": [
+            7390237
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_14",
+    "sequence": [
+      "mcp__daloopa__discover_company_series",
+      "mcp__daloopa__discover_company_series"
+    ],
+    "support": 480,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "mcp__daloopa__discover_company_series",
+        "input_mapping": {},
+        "static_inputs": {
+          "company_id": 246417,
+          "keywords": [
+            "mosquito",
+            "hmmp"
+          ],
+          "periods": [
+            "2023FY"
+          ]
+        }
+      },
+      {
+        "tool_name": "mcp__daloopa__discover_company_series",
+        "input_mapping": {},
+        "static_inputs": {
+          "company_id": 246417,
+          "keywords": [
+            "pharmaceutical",
+            "guidance"
+          ],
+          "periods": [
+            "2023FY"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_15",
+    "sequence": [
+      "discover_company_series",
+      "discover_company_series"
+    ],
+    "support": 372,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "discover_company_series",
+        "input_mapping": {},
+        "static_inputs": {
+          "keywords": [
+            "finance cost",
+            "sincerity",
+            "dealer",
+            "deposit"
+          ],
+          "periods": [
+            "2025Q1"
+          ],
+          "company_id": 245945
+        }
+      },
+      {
+        "tool_name": "discover_company_series",
+        "input_mapping": {},
+        "static_inputs": {
+          "periods": [
+            "2025Q1"
+          ],
+          "keywords": [
+            "interest on",
+            "dealers",
+            "sincerity"
+          ],
+          "company_id": 245945
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_16",
+    "sequence": [
+      "get_company_fundamentals",
+      "get_company_fundamentals"
+    ],
+    "support": 363,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "get_company_fundamentals",
+        "input_mapping": {},
+        "static_inputs": {
+          "periods": [
+            "2024Q2"
+          ],
+          "company_id": 245945,
+          "series_ids": [
+            7202901
+          ]
+        }
+      },
+      {
+        "tool_name": "get_company_fundamentals",
+        "input_mapping": {},
+        "static_inputs": {
+          "periods": [
+            "2024FY",
+            "2024Q2"
+          ],
+          "series_ids": [
+            7202901
+          ],
+          "company_id": 245945
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_17",
+    "sequence": [
+      "mcp__daloopa__discover_company_series",
+      "mcp__daloopa__discover_company_series",
+      "mcp__daloopa__discover_company_series"
+    ],
+    "support": 296,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "mcp__daloopa__discover_company_series",
+        "input_mapping": {},
+        "static_inputs": {
+          "company_id": 246417,
+          "keywords": [
+            "mosquito",
+            "hmmp"
+          ],
+          "periods": [
+            "2023FY"
+          ]
+        }
+      },
+      {
+        "tool_name": "mcp__daloopa__discover_company_series",
+        "input_mapping": {},
+        "static_inputs": {
+          "company_id": 246417,
+          "keywords": [
+            "pharmaceutical",
+            "guidance"
+          ],
+          "periods": [
+            "2023FY"
+          ]
+        }
+      },
+      {
+        "tool_name": "mcp__daloopa__discover_company_series",
+        "input_mapping": {},
+        "static_inputs": {
+          "company_id": 246417,
+          "keywords": [
+            "pharmaceutical",
+            "total"
+          ],
+          "periods": [
+            "2023FY"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_18",
+    "sequence": [
+      "discover_company_series",
+      "get_company_fundamentals",
+      "get_company_fundamentals"
+    ],
+    "support": 247,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "discover_company_series",
+        "input_mapping": {},
+        "static_inputs": {
+          "periods": [
+            "2024Q2"
+          ],
+          "company_id": 245945,
+          "keywords": [
+            "Finance costs"
+          ]
+        }
+      },
+      {
+        "tool_name": "get_company_fundamentals",
+        "input_mapping": {},
+        "static_inputs": {
+          "periods": [
+            "2024Q2"
+          ],
+          "company_id": 245945,
+          "series_ids": [
+            7202901
+          ]
+        }
+      },
+      {
+        "tool_name": "get_company_fundamentals",
+        "input_mapping": {},
+        "static_inputs": {
+          "periods": [
+            "2024FY",
+            "2024Q2"
+          ],
+          "series_ids": [
+            7202901
+          ],
+          "company_id": 245945
+        }
+      }
+    ]
+  },
+  {
+    "skill_id": "skill_19",
+    "sequence": [
+      "mcp__daloopa__discover_company_series",
+      "mcp__daloopa__discover_company_series",
+      "mcp__daloopa__discover_company_series",
+      "mcp__daloopa__discover_company_series"
+    ],
+    "support": 199,
+    "strategy": "FrequentSequence",
+    "template": [
+      {
+        "tool_name": "mcp__daloopa__discover_company_series",
+        "input_mapping": {},
+        "static_inputs": {
+          "company_id": 246417,
+          "keywords": [
+            "mosquito",
+            "hmmp"
+          ],
+          "periods": [
+            "2023FY"
+          ]
+        }
+      },
+      {
+        "tool_name": "mcp__daloopa__discover_company_series",
+        "input_mapping": {},
+        "static_inputs": {
+          "company_id": 246417,
+          "keywords": [
+            "pharmaceutical",
+            "guidance"
+          ],
+          "periods": [
+            "2023FY"
+          ]
+        }
+      },
+      {
+        "tool_name": "mcp__daloopa__discover_company_series",
+        "input_mapping": {},
+        "static_inputs": {
+          "company_id": 246417,
+          "keywords": [
+            "pharmaceutical",
+            "total"
+          ],
+          "periods": [
+            "2023FY"
+          ]
+        }
+      },
+      {
+        "tool_name": "mcp__daloopa__discover_company_series",
+        "input_mapping": {},
+        "static_inputs": {
+          "company_id": 246417,
+          "keywords": [
+            "Guidance",
+            "Pharmaceutical",
+            "parent"
+          ],
+          "periods": [
+            "2023FY"
+          ]
+        }
+      }
+    ]
+  }
+]
