@@ -1,0 +1,122 @@
+[
+  {
+    "skill_count": 260,
+    "coverage": 0.9111807732497388,
+    "confidence": 1.0,
+    "support_sum": 8138,
+    "method": "A",
+    "train_size": 100
+  },
+  {
+    "skill_count": 10,
+    "coverage": 0.8254963427377221,
+    "confidence": 1.0,
+    "support_sum": 957,
+    "method": "B",
+    "train_size": 100
+  },
+  {
+    "skill_count": 40,
+    "coverage": 0.8913270637408568,
+    "confidence": 1.0,
+    "support_sum": 839,
+    "method": "C",
+    "train_size": 100
+  },
+  {
+    "skill_count": 15,
+    "coverage": 0.9278996865203761,
+    "confidence": 1.0,
+    "support_sum": 4106,
+    "method": "D",
+    "train_size": 100
+  },
+  {
+    "skill_count": 130,
+    "coverage": 0.910135841170324,
+    "confidence": 1.0,
+    "support_sum": 8762,
+    "method": "E",
+    "train_size": 100
+  },
+  {
+    "skill_count": 227,
+    "coverage": 0.8876898481215028,
+    "confidence": 1.0,
+    "support_sum": 19660,
+    "method": "A",
+    "train_size": 250
+  },
+  {
+    "skill_count": 10,
+    "coverage": 0.8585131894484412,
+    "confidence": 1.0,
+    "support_sum": 2502,
+    "method": "B",
+    "train_size": 250
+  },
+  {
+    "skill_count": 63,
+    "coverage": 0.8721023181454837,
+    "confidence": 1.0,
+    "support_sum": 2218,
+    "method": "C",
+    "train_size": 250
+  },
+  {
+    "skill_count": 19,
+    "coverage": 0.9284572342126299,
+    "confidence": 1.0,
+    "support_sum": 10350,
+    "method": "D",
+    "train_size": 250
+  },
+  {
+    "skill_count": 229,
+    "coverage": 0.9236610711430855,
+    "confidence": 1.0,
+    "support_sum": 22162,
+    "method": "E",
+    "train_size": 250
+  },
+  {
+    "skill_count": 209,
+    "coverage": 0.9223652453740949,
+    "confidence": 1.0,
+    "support_sum": 40037,
+    "method": "A",
+    "train_size": 500
+  },
+  {
+    "skill_count": 10,
+    "coverage": 0.9026548672566371,
+    "confidence": 1.0,
+    "support_sum": 4972,
+    "method": "B",
+    "train_size": 500
+  },
+  {
+    "skill_count": 87,
+    "coverage": 0.9109010458567981,
+    "confidence": 1.0,
+    "support_sum": 4609,
+    "method": "C",
+    "train_size": 500
+  },
+  {
+    "skill_count": 22,
+    "coverage": 0.9617860016090105,
+    "confidence": 1.0,
+    "support_sum": 21236,
+    "method": "D",
+    "train_size": 500
+  },
+  {
+    "skill_count": 211,
+    "coverage": 0.9569589702333066,
+    "confidence": 1.0,
+    "support_sum": 45009,
+    "method": "E",
+    "train_size": 500
+  }
+]

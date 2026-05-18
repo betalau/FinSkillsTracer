@@ -39,7 +39,9 @@ class DataIngestionEngine:
                     "trace_id": f"{row['configuration']}_{row['index']}",
                     "original_index": row['index'],
                     "configuration": row['configuration'],
-                    "calls": formatted_calls
+                    "calls": formatted_calls,
+                    "expected_value": row.get('expected_value'),
+                    "is_correct": row.get('is_correct', False)
                 })
             except Exception as e:
                 print(f"Error processing row {row['index']}: {e}")
