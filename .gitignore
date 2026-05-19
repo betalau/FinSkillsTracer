@@ -1,1 +1,23 @@
+# Data (downloaded from HuggingFace)
 data/
+
+# Secrets
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Experiment outputs (large JSON/CSV)
+phase2_results.json
+phase3_results.json
+evaluation_metrics.json
+skills_bank_v2.json
+experiments/ablation_results.json
+experiments/ablation_results.csv
+*.png
