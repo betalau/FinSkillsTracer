@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinSkillsTracer — Trace-to-Skills Mining for Financial AI Agents</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ============================================================
+   FinSkillsTracer v2.0 — Professional Enterprise Edition
+   Color Palette: EFund Institutional Blue
+   ============================================================ */
+:root {
+  --primary: #005096;
+  --primary-dark: #003a6f;
+  --primary-light: #e8f0f8;
+  --accent: #1EB9E1;
+  --accent-light: #e6f7fc;
+  --bg: #F4F7F8;
+  --bg-white: #FFFFFF;
+  --card-bg: #FFFFFF;
+  --card-shadow: 0 2px 16px rgba(0,80,150,0.07), 0 0 0 1px rgba(0,80,150,0.04);
+  --card-shadow-hover: 0 6px 32px rgba(0,80,150,0.11), 0 0 0 1px rgba(0,80,150,0.07);
+  --text: #1a2a3a;
+  --text-secondary: #5a6d80;
+  --text-tertiary: #8a9bb0;
+  --border: #E2E8EE;
+  --border-light: #EEF2F5;
+  --gold: #C8963E;
+  --gold-light: #fdf6ea;
+  --red: #C41230;
+  --red-light: #fef0f2;
+  --green: #1a8c5e;
+  --green-light: #edf8f3;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --font-sans: 'Inter','Segoe UI','PingFang SC','Microsoft YaHei',system-ui,sans-serif;
+  --font-mono: 'JetBrains Mono','SF Mono','Cascadia Code','Consolas',monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; font-size:16px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Navigation ---- */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index: 100;
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 36px; height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+nav .logo-img { height: 28px; margin-right: 10px; }
+nav .logo { font-weight: 700; font-size: 1rem; color: var(--primary); letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; }
+nav .logo .ver { color: var(--text-tertiary); font-weight: 400; font-size: 0.72rem; }
+nav .nav-links { display: flex; gap: 22px; list-style: none; align-items: center; }
+nav .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.8rem; font-weight: 500; transition: color .2s; }
+nav .nav-links a:hover { color: var(--primary); }
+nav .lang-btn {
+  background: var(--primary-light); border: 1px solid var(--border);
+  color: var(--primary); padding: 5px 14px; border-radius: 16px;
+  cursor: pointer; font-size: 0.76rem; font-weight: 600;
+  transition: all .2s; display: flex; align-items: center; gap: 5px;
+}
+nav .lang-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+/* ---- Sections ---- */
+section { position: relative; z-index: 1; padding: 72px 36px; max-width: 1160px; margin: 0 auto; }
+.section-tag {
+  display: inline-block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--primary); margin-bottom: 8px;
+  padding: 4px 12px; background: var(--primary-light); border-radius: 4px;
+}
+.section-title {
+  font-size: 2rem; font-weight: 700; color: var(--text);
+  margin-bottom: 8px; letter-spacing: -0.6px; line-height: 1.25;
+}
+.section-sub {
+  font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 36px; max-width: 680px; line-height: 1.6;
+}
+.accent { color: var(--primary); }
+.accent2 { color: var(--accent); }
+.gold { color: var(--gold); }
+
+/* ---- Cards ---- */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 28px;
+  box-shadow: var(--card-shadow);
+  transition: box-shadow .25s;
+}
+.card:hover { box-shadow: var(--card-shadow-hover); }
+.card h3 { color: var(--text); font-size: 1.05rem; margin-bottom: 10px; font-weight: 650; }
+
+/* ---- Grids ---- */
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+
+/* ---- Hero ---- */
+#hero { min-height: 88vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding-top: 56px; }
+#hero .hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 14px; background: var(--accent-light); border-radius: 20px;
+  font-size: 0.76rem; color: var(--primary); font-weight: 600; margin-bottom: 24px;
+}
+#hero .hero-badge a { color: var(--primary); text-decoration: none; }
+#hero .hero-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+#hero h1 { font-size: 3.2rem; font-weight: 800; line-height: 1.15; letter-spacing: -1.5px; margin-bottom: 16px; color: var(--text); }
+#hero h1 span { color: var(--primary); }
+#hero .tagline { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 28px; max-width: 620px; line-height: 1.6; }
+#hero .hero-stats { display: flex; gap: 44px; margin-top: 16px; }
+#hero .hero-stat { text-align: center; }
+#hero .hero-stat .val { font-size: 2.4rem; font-weight: 800; color: var(--primary); letter-spacing: -1px; }
+#hero .hero-stat .lbl { font-size: 0.76rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+/* ---- Metric mini-cards ---- */
+.metric-card { text-align: center; padding: 20px 14px; }
+.metric-card .big-num { font-size: 1.8rem; font-weight: 700; color: var(--primary); }
+.metric-card .label { font-size: 0.76rem; color: var(--text-tertiary); margin-top: 4px; }
+.delta-up { color: var(--green); font-weight: 600; }
+.delta-down { color: var(--gold); font-weight: 600; }
+
+/* ---- Code / Trace blocks ---- */
+.trace-block {
+  background: #f8fafb;
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.75;
+  overflow-x: auto;
+  border: 1px solid var(--border-light);
+}
+.trace-block .tool-name { color: var(--primary); font-weight: 600; }
+.trace-block .arrow { color: var(--text-tertiary); }
+.trace-block .param { color: #8e24aa; }
+
+/* ---- Pipeline SVG ---- */
+.pipeline-row { display: flex; align-items: center; gap: 12px; justify-content: center; flex-wrap: wrap; padding: 12px; }
+.pipeline-node {
+  background: #fff; border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px 20px; font-family: var(--font-mono); font-size: 0.76rem;
+  text-align: center; min-width: 130px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: all .3s;
+}
+.pipeline-node.blue { border-color: var(--primary); background: var(--primary-light); }
+.pipeline-node.cyan { border-color: var(--accent); background: var(--accent-light); }
+.pipeline-node.gold { border-color: var(--gold); background: var(--gold-light); }
+.pipeline-node .tool { color: var(--primary); font-weight: 600; }
+.pipeline-node .desc { color: var(--text-tertiary); font-size: 0.68rem; margin-top: 3px; }
+.pipeline-arrow { font-size: 1.2rem; color: var(--text-tertiary); }
+
+/* ---- Tabs ---- */
+.tabs-nav { display: flex; gap: 2px; margin-bottom: 24px; border-bottom: 2px solid var(--border); }
+.tab-btn {
+  padding: 10px 22px; cursor: pointer; font-size: 0.82rem; font-weight: 550;
+  color: var(--text-secondary); border-bottom: 2px solid transparent; margin-bottom: -2px;
+  transition: all .2s; background: none; border-top: none; border-left: none; border-right: none;
+  font-family: var(--font-sans);
+}
+.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+.tab-btn:hover { color: var(--primary); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ---- Tables ---- */
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+.data-table thead th {
+  text-align: left; padding: 10px 14px; color: var(--text-tertiary);
+  font-weight: 550; border-bottom: 2px solid var(--border);
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.6px;
+  background: #fafbfc;
+}
+.data-table tbody td {
+  padding: 10px 14px; border-bottom: 1px solid var(--border-light);
+}
+.data-table .num { font-family: var(--font-mono); font-weight: 600; text-align: right; }
+.data-table .highlight { color: var(--primary); font-weight: 650; }
+
+/* ---- Error mining detail ---- */
+.error-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.error-bar .tool-label { width: 180px; font-size: 0.78rem; font-family: var(--font-mono); color: var(--text-secondary); text-align: right; }
+.error-bar .bar-fill { height: 22px; border-radius: 4px; transition: width .6s; }
+.error-bar .bar-val { font-size: 0.74rem; font-weight: 600; color: var(--text); min-width: 50px; }
+
+/* ---- Strategy cards ---- */
+.strategy-card { border-left: 3px solid var(--primary); padding-left: 16px; margin-bottom: 14px; }
+.strategy-card h4 { font-size: 0.88rem; font-weight: 650; color: var(--text); margin-bottom: 4px; }
+.strategy-card p { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.55; }
+
+/* ---- Tree viz ---- */
+.tree-node {
+  position: relative; padding: 7px 14px; margin: 3px 0; border-radius: 5px;
+  font-size: 0.76rem; font-family: var(--font-mono);
+}
+.tree-node.root { background: var(--primary-light); border: 1px solid rgba(0,80,150,0.25); font-weight: 650; }
+.tree-node.cat { background: var(--accent-light); border: 1px solid rgba(30,185,225,0.2); margin-left: 24px; }
+.tree-node.leaf { background: #fff; border: 1px solid var(--border-light); margin-left: 48px; font-size: 0.72rem; }
+.tree-node .cnt { float: right; font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; background: rgba(0,0,0,0.04); color: var(--text-secondary); }
+
+/* ---- Demo section ---- */
+.demo-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.demo-input {
+  width: 100%; background: #fff; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 16px; color: var(--text);
+  font-family: var(--font-mono); font-size: 0.84rem; outline: none;
+  transition: border-color .2s;
+}
+.demo-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,80,150,0.07); }
+.btn {
+  background: var(--primary); border: none; border-radius: var(--radius-sm);
+  padding: 9px 20px; color: #fff; font-weight: 600; font-size: 0.82rem;
+  cursor: pointer; transition: all .2s; font-family: var(--font-sans);
+}
+.btn:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,80,150,0.2); }
+.btn-outline {
+  background: #fff; border: 1px solid var(--border); color: var(--primary);
+  padding: 7px 16px; border-radius: var(--radius-sm); font-size: 0.76rem;
+  cursor: pointer; font-weight: 550; transition: all .2s; font-family: var(--font-sans);
+}
+.btn-outline:hover { border-color: var(--primary); background: var(--primary-light); }
+
+@keyframes stepPulse {
+  0% { box-shadow: 0 0 0 0 rgba(0,80,150,0.35); }
+  70% { box-shadow: 0 0 16px 6px rgba(0,80,150,0); }
+  100% { box-shadow: 0 0 0 0 rgba(0,80,150,0); }
+}
+.step-anim { animation: stepPulse 0.8s ease-out; }
+
+/* ---- Footer ---- */
+footer {
+  text-align: center; padding: 40px; font-size: 0.78rem; color: var(--text-tertiary);
+  border-top: 1px solid var(--border); background: #fff;
+}
+footer a { color: var(--primary); text-decoration: none; font-weight: 550; }
+footer a:hover { text-decoration: underline; }
+
+/* ---- Chart wrapper ---- */
+.chart-wrap { position: relative; height: 300px; }
+.chart-wrap.tall { height: 370px; }
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ---- Animated entrance ---- */
+@keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+.reveal { animation: fadeInUp 0.5s ease-out both; }
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .demo-container { grid-template-columns: 1fr; }
+  #hero h1 { font-size: 2rem; }
+  section { padding: 40px 16px; }
+  nav .nav-links { gap: 10px; }
+  nav .nav-links a { font-size: 0.7rem; }
+}
+
+/* ---- Badge ---- */
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 12px;
+  font-size: 0.7rem; font-weight: 600;
+}
+.badge-blue { background: var(--primary-light); color: var(--primary); }
+.badge-cyan { background: var(--accent-light); color: #0d7a96; }
+.badge-gold { background: var(--gold-light); color: #8a6320; }
+.badge-green { background: var(--green-light); color: var(--green); }
+.badge-red { background: var(--red-light); color: var(--red); }
+
+/* Feature list */
+.feature-list { list-style: none; padding: 0; }
+.feature-list li { padding: 6px 0; font-size: 0.84rem; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 8px; }
+.feature-list li::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); margin-top: 7px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<!-- ====== NAVIGATION ====== -->
+<nav>
+  <div class="logo">
+    <svg width="26" height="26" viewBox="0 0 26 26"><rect x="2" y="2" width="22" height="22" rx="5" fill="#005096"/><rect x="5" y="9" width="4" height="10" rx="2" fill="#fff" opacity="0.9"/><rect x="11" y="6" width="4" height="13" rx="2" fill="#fff" opacity="0.9"/><rect x="17" y="4" width="4" height="15" rx="2" fill="#1EB9E1"/></svg>
+    <span>FinSkillsTracer</span>
+    <span class="ver">v2.0</span>
+  </div>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#hero" data-i18n="nav_home">Home</a></li>
+    <li><a href="#background" data-i18n="nav_bg">Background</a></li>
+    <li><a href="#architecture" data-i18n="nav_arch">Architecture</a></li>
+    <li><a href="#phase1" data-i18n="nav_p1">Mining</a></li>
+    <li><a href="#phase2" data-i18n="nav_p2">Evaluation</a></li>
+    <li><a href="#phase3" data-i18n="nav_p3">Optimization</a></li>
+    <li><a href="#demo" data-i18n="nav_demo">Demo</a></li>
+    <li><a href="#results" data-i18n="nav_results">Results</a></li>
+  </ul>
+  <button class="lang-btn" onclick="toggleLang()" id="lang-btn" title="Switch Language / 切换语言">
+    <span id="lang-icon">中</span> <span id="lang-label">中文</span>
+  </button>
+</nav>
+
+<!-- ====== HERO ====== -->
+<section id="hero">
+  <div class="hero-badge">
+    <span class="dot"></span>
+    <a href="https://github.com/betalau/FinSkillsTracer" target="_blank">github.com/betalau/FinSkillsTracer</a>
+    &nbsp;·&nbsp;
+    <a href="https://huggingface.co/datasets/daloopa/finretrieval" target="_blank">daloopa/finretrieval</a>
+  </div>
+  <h1><span>FinSkillsTracer</span><br><span data-i18n="hero_title2">Trace-to-Skills Mining</span></h1>
+  <p class="tagline" data-i18n="hero_tagline">
+    Automated discovery, parameterization, evaluation, and evolution of reusable agent skills
+    from 7,000 financial retrieval traces across 14 LLM configurations — making AI agents
+    faster and more accurate without manual skill authoring.
+  </p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="val">96.04%</div><div class="lbl" data-i18n="stat_cov">Test Coverage</div></div>
+    <div class="hero-stat"><div class="val">92.1%</div><div class="lbl" data-i18n="stat_lat">Latency Reduction</div></div>
+    <div class="hero-stat"><div class="val">181</div><div class="lbl" data-i18n="stat_skills">Evolved Skills</div></div>
+    <div class="hero-stat"><div class="val">14</div><div class="lbl" data-i18n="stat_models">LLM Configs</div></div>
+  </div>
+</section>
+
+<!-- ====== BACKGROUND ====== -->
+<section id="background">
+  <div class="section-tag" data-i18n="tag_bg">Problem Statement</div>
+  <h2 class="section-title" data-i18n="bg_title">The <span class="accent">Skill Gap</span> in Financial AI Agents</h2>
+  <p class="section-sub" data-i18n="bg_sub">
+    Modern LLM-powered agents rely on tool-calling to answer complex financial queries.
+    However, hand-crafting agent skills is expensive, brittle across model configurations,
+    and does not scale. FinSkillsTracer addresses this gap by automatically mining skills
+    from execution traces.
+  </p>
+
+  <div class="grid-2">
+    <div class="card" style="border-top: 3px solid var(--red);">
+      <h3 data-i18n="bg_without_title">Without Pre-Mined Skills (ReAct Loop)</h3>
+      <div class="trace-block" style="font-size:0.74rem; margin-top:10px;">
+        <span class="tool-name">WebSearch</span> "Apple revenue FY2024"<br>
+        <span class="tool-name">WebSearch</span> "Apple Inc financial statements"<br>
+        <span class="tool-name">discover_companies</span>(keywords=["Apple"])<br>
+        <span class="tool-name">WebSearch</span> "AAPL quarterly earnings 2024"<br>
+        <span class="tool-name">WebFetch</span> "https://finance.yahoo.com/..." <br>
+        <span class="tool-name">discover_company_series</span>(company_id=123)<br>
+        <span class="tool-name">WebSearch</span> "Apple 10-K SEC filing FY2024"<br>
+        <span class="tool-name">get_company_fundamentals</span>(company_id=123)<br>
+        <span style="color:var(--text-tertiary);">... +6 redundant / refinement calls ...</span>
+      </div>
+      <div style="margin-top:12px; display:flex; gap:16px; flex-wrap:wrap;">
+        <span class="badge badge-red" data-i18n="bg_bad_calls">~14 tool calls</span>
+        <span class="badge badge-red" data-i18n="bg_bad_lat">~41s latency</span>
+        <span class="badge badge-red" data-i18n="bg_bad_err">2.9% error rate</span>
+        <span class="badge badge-red" data-i18n="bg_bad_redun">High redundancy</span>
+      </div>
+    </div>
+
+    <div class="card" style="border-top: 3px solid var(--green);">
+      <h3 data-i18n="bg_with_title">With FinSkillsTracer Skills (SkillAware Agent)</h3>
+      <div class="trace-block" style="font-size:0.74rem; margin-top:10px;">
+        <span class="tool-name">discover_companies</span>(keywords=["Apple"])<br>
+        <span class="arrow">→</span> company_id: <span class="param">320193</span><br>
+        <span class="tool-name">discover_company_series</span>(company_id=<span class="param">320193</span>)<br>
+        <span class="arrow">→</span> series_ids: <span class="param">[...]</span><br>
+        <span class="tool-name">get_company_fundamentals</span>(company_id=<span class="param">320193</span>, series_ids=<span class="param">[...]</span>)
+      </div>
+      <div style="margin-top:12px; display:flex; gap:16px; flex-wrap:wrap;">
+        <span class="badge badge-green" data-i18n="bg_good_calls">6 tool calls</span>
+        <span class="badge badge-green" data-i18n="bg_good_lat">~3.2s latency</span>
+        <span class="badge badge-green" data-i18n="bg_good_err">0% error rate</span>
+        <span class="badge badge-green" data-i18n="bg_good_flow">Parameter reuse</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:24px;">
+    <h3 data-i18n="bg_challenge_title">Core Challenges Addressed</h3>
+    <div class="grid-3" style="margin-top:12px;">
+      <div style="padding:0 8px;">
+        <h4 style="font-size:0.88rem;color:var(--primary);" data-i18n="bg_c1_title">Tool Proliferation</h4>
+        <p style="font-size:0.8rem;color:var(--text-secondary);" data-i18n="bg_c1_desc">
+          17 tool types across 14 LLM configs create combinatorial explosion — agents waste calls on redundant exploration instead of exploiting known patterns.
+        </p>
+      </div>
+      <div style="padding:0 8px;">
+        <h4 style="font-size:0.88rem;color:var(--primary);" data-i18n="bg_c2_title">Configuration Fragility</h4>
+        <p style="font-size:0.8rem;color:var(--text-secondary);" data-i18n="bg_c2_desc">
+          Skills hand-tuned for one model break on others. Our cross-model consensus mechanism validates skills that generalize across all 14 configurations.
+        </p>
+      </div>
+      <div style="padding:0 8px;">
+        <h4 style="font-size:0.88rem;color:var(--primary);" data-i18n="bg_c3_title">Parameter Wiring</h4>
+        <p style="font-size:0.8rem;color:var(--text-secondary);" data-i18n="bg_c3_desc">
+          Tool outputs must feed into subsequent tool inputs. Manual wiring is error-prone; automated data-flow detection achieves 76.4% parameter match rates.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== DATASET ====== -->
+<section id="dataset" style="padding-top:20px;">
+  <div class="section-tag" data-i18n="tag_data">Dataset</div>
+  <h2 class="section-title"><span class="accent">FinRetrieval</span> Dataset</h2>
+  <p class="section-sub" data-i18n="data_sub">
+    From HuggingFace <a href="https://huggingface.co/datasets/daloopa/finretrieval" target="_blank" style="color:var(--primary);">daloopa/finretrieval</a> — 7,000 tool-call traces generated by 14 LLM configurations answering 500 financial queries using 17 financial API tools.
+  </p>
+  <div class="grid-4">
+    <div class="card metric-card">
+      <div class="big-num">7,000</div>
+      <div class="label" data-i18n="data_traces">Tool-call Traces</div>
+    </div>
+    <div class="card metric-card">
+      <div class="big-num">500</div>
+      <div class="label" data-i18n="data_queries">Financial Queries</div>
+    </div>
+    <div class="card metric-card">
+      <div class="big-num">14</div>
+      <div class="label" data-i18n="data_models">LLM Configurations</div>
+    </div>
+    <div class="card metric-card">
+      <div class="big-num">17</div>
+      <div class="label" data-i18n="data_tools">Tool Types</div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:20px;">
+    <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:0.76rem;">
+      <span class="badge badge-blue">gemini3pro</span>
+      <span class="badge badge-blue">gemini3pro_reasoning</span>
+      <span class="badge badge-blue">gemini3pro_webonly</span>
+      <span class="badge badge-blue">gemini3pro_webonly_reasoning</span>
+      <span class="badge badge-cyan">gpt5.2</span>
+      <span class="badge badge-cyan">gpt5.2_reasoning</span>
+      <span class="badge badge-cyan">gpt5.2_webonly</span>
+      <span class="badge badge-cyan">gpt5.2_webonly_reasoning</span>
+      <span class="badge badge-gold">opus4.5</span>
+      <span class="badge badge-gold">opus4.5_reasoning</span>
+      <span class="badge badge-gold">opus4.5_webonly</span>
+      <span class="badge badge-gold">opus4.5_webonly_reasoning</span>
+      <span class="badge badge-green">sonnet4.5</span>
+      <span class="badge badge-green">sonnet4.5_reasoning</span>
+    </div>
+    <p style="font-size:0.74rem;color:var(--text-tertiary);margin-top:10px;">
+      8 full-tool configurations + 6 web-only variants · Reasoning and non-reasoning modes
+    </p>
+  </div>
+</section>
+
+<!-- ====== ARCHITECTURE ====== -->
+<section id="architecture">
+  <div class="section-tag" data-i18n="tag_arch">Solution Architecture</div>
+  <h2 class="section-title" data-i18n="arch_title">Three-Phase <span class="accent">Optimization</span> Pipeline</h2>
+  <p class="section-sub" data-i18n="arch_sub">
+    The pipeline processes raw traces through three stages: Mine (discover candidate skills from
+    traces), Evaluate (measure real utility with error mining and benchmarks), and Optimize
+    (evolve skills through mutation, crossover, and data-flow parameterization).
+  </p>
+
+  <div class="card" style="padding:32px;">
+    <svg viewBox="0 0 920 340" style="width:100%;max-width:920px;display:block;margin:0 auto;">
+      <!-- Box: Dataset -->
+      <rect x="15" y="120" width="125" height="55" rx="8" fill="#e8f0f8" stroke="#005096" stroke-width="1.5"/>
+      <text x="77" y="145" text-anchor="middle" fill="#005096" font-size="12" font-weight="700">FinRetrieval</text>
+      <text x="77" y="162" text-anchor="middle" fill="#5a6d80" font-size="9">7,000 traces</text>
+
+      <line x1="140" y1="147" x2="215" y2="147" stroke="#005096" stroke-width="2" marker-end="url(#arrBlue)"/>
+
+      <!-- Phase 1 -->
+      <rect x="220" y="50" width="200" height="70" rx="8" fill="#e8f0f8" stroke="#005096" stroke-width="1.5"/>
+      <text x="320" y="76" text-anchor="middle" fill="#005096" font-size="11" font-weight="700">PHASE 1 — Mining</text>
+      <text x="320" y="94" text-anchor="middle" fill="#1a2a3a" font-size="10">5 Strategies (A/B/C/D/E)</text>
+      <text x="320" y="110" text-anchor="middle" fill="#5a6d80" font-size="9">P1.1 Consensus · P1.2 Split · P1.3 LLM Desc</text>
+
+      <line x1="420" y1="85" x2="495" y2="85" stroke="#C8963E" stroke-width="2" marker-end="url(#arrGold)"/>
+
+      <!-- Phase 2 -->
+      <rect x="500" y="50" width="200" height="70" rx="8" fill="#fdf6ea" stroke="#C8963E" stroke-width="1.5"/>
+      <text x="600" y="76" text-anchor="middle" fill="#8a6320" font-size="11" font-weight="700">PHASE 2 — Evaluation</text>
+      <text x="600" y="94" text-anchor="middle" fill="#1a2a3a" font-size="10">Error Mining · Benchmark</text>
+      <text x="600" y="110" text-anchor="middle" fill="#5a6d80" font-size="9">P2.1 Errors · P2.2 Agent · P2.3 LLM</text>
+
+      <line x1="700" y1="85" x2="775" y2="85" stroke="#1EB9E1" stroke-width="2" marker-end="url(#arrCyan)"/>
+
+      <!-- Phase 3 -->
+      <rect x="780" y="50" width="125" height="70" rx="8" fill="#e6f7fc" stroke="#1EB9E1" stroke-width="1.5"/>
+      <text x="842" y="76" text-anchor="middle" fill="#0d7a96" font-size="11" font-weight="700">PHASE 3</text>
+      <text x="842" y="94" text-anchor="middle" fill="#1a2a3a" font-size="10">Deep Optimization</text>
+      <text x="842" y="110" text-anchor="middle" fill="#5a6d80" font-size="9">Tree · Param · Evolve</text>
+
+      <!-- Output -->
+      <rect x="780" y="195" width="125" height="55" rx="8" fill="#edf8f3" stroke="#1a8c5e" stroke-width="1.5"/>
+      <text x="842" y="220" text-anchor="middle" fill="#1a8c5e" font-size="11" font-weight="700">Skill Bank</text>
+      <text x="842" y="238" text-anchor="middle" fill="#5a6d80" font-size="9">181 evolved skills</text>
+
+      <line x1="842" y1="120" x2="842" y2="195" stroke="#1EB9E1" stroke-width="2"/>
+
+      <!-- Consensus Loop -->
+      <rect x="220" y="195" width="200" height="55" rx="8" fill="#edf8f3" stroke="#1a8c5e" stroke-width="1.5"/>
+      <text x="320" y="220" text-anchor="middle" fill="#1a8c5e" font-size="10" font-weight="650">Cross-Model Consensus</text>
+      <text x="320" y="238" text-anchor="middle" fill="#5a6d80" font-size="9">Tool-category-aware · 14 configs</text>
+
+      <line x1="320" y1="120" x2="320" y2="195" stroke="#1a8c5e" stroke-width="1.5"/>
+      <path d="M 220 222 Q 180 222 180 147 Q 180 85 220 85" fill="none" stroke="#1a8c5e" stroke-width="1.5" stroke-dasharray="6,3"/>
+
+      <!-- Agent Benchmark -->
+      <rect x="500" y="195" width="200" height="55" rx="8" fill="#fef0f2" stroke="#C41230" stroke-width="1.5"/>
+      <text x="600" y="220" text-anchor="middle" fill="#C41230" font-size="10" font-weight="650">Agent-vs-Agent Benchmark</text>
+      <text x="600" y="238" text-anchor="middle" fill="#5a6d80" font-size="9">SkillAware vs ReAct vs Random</text>
+
+      <line x1="600" y1="120" x2="600" y2="195" stroke="#C41230" stroke-width="1.5"/>
+
+      <defs>
+        <marker id="arrBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#005096"/></marker>
+        <marker id="arrGold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#C8963E"/></marker>
+        <marker id="arrCyan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#1EB9E1"/></marker>
+      </defs>
+    </svg>
+  </div>
+</section>
+
+<!-- ====== PHASE 1: MINING STRATEGIES ====== -->
+<section id="phase1">
+  <div class="section-tag" data-i18n="tag_p1">Phase 1</div>
+  <h2 class="section-title" data-i18n="p1_title">Skill <span class="accent">Mining</span> — Five Complementary Strategies</h2>
+  <p class="section-sub" data-i18n="p1_sub">
+    Five distinct mining strategies are applied to the same 7,000 traces. Each uncovers a
+    different class of reusable patterns. Strategies A and E dominate on coverage; B-D provide
+    semantic and structural signals for downstream evolution.
+  </p>
+
+  <div class="grid-2">
+    <!-- Strategy A -->
+    <div class="card strategy-card" style="border-left-color: var(--primary);">
+      <h4><span class="badge badge-blue">A</span> &nbsp;FSP — Frequent Sub-sequence Pattern Mining</h4>
+      <p data-i18n="p1_a_desc">
+        Sliding-window enumeration of all tool-name subsequences (length 2-5) across all traces.
+        Patterns appearing ≥ min_support (5) traces are promoted to candidate skills.
+        <strong>Result:</strong> 177 skills, 96.04% coverage, 24.9% consensus rate.
+      </p>
+      <div class="trace-block" style="font-size:0.7rem;margin-top:6px;">
+        Example: [WebSearch, WebSearch, WebSearch] → support 8,991 instances
+      </div>
+    </div>
+
+    <!-- Strategy B -->
+    <div class="card strategy-card" style="border-left-color: var(--accent);">
+      <h4><span class="badge badge-cyan">B</span> &nbsp;Semantic — K-Means Clustering + LLM Description</h4>
+      <p data-i18n="p1_b_desc">
+        Tool sequences are embedded as feature vectors and clustered via k-means (k=10).
+        Each cluster centroid triggers an LLM-generated skill name and natural-language
+        description. <strong>Result:</strong> 10 semantically coherent skill clusters.
+      </p>
+      <div class="trace-block" style="font-size:0.7rem;margin-top:6px;">
+        Example: "Corporate Expansion Tracking" — semantic cluster of single-WebSearch patterns
+      </div>
+    </div>
+
+    <!-- Strategy C -->
+    <div class="card strategy-card" style="border-left-color: #7c4dff;">
+      <h4><span class="badge badge-blue" style="background:#f3edff;color:#7c4dff;">C</span> &nbsp;Hierarchical — Recursive Boundary Detection (P3.1)</h4>
+      <p data-i18n="p1_c_desc">
+        Three signal types detect sub-goal boundaries in traces: (1) tool-category transitions,
+        (2) duration spikes (&gt;3× median neighbor), (3) I/O dependency chain breaks.
+        Recursively segments traces into a 3-level tree. <strong>Result:</strong> 87 skills, 5 categories.
+      </p>
+      <div class="trace-block" style="font-size:0.7rem;margin-top:6px;">
+        Categories: financial_direct (27), web_search (47), financial_mcp (14), web_fetch (2), file_ops (2)
+      </div>
+    </div>
+
+    <!-- Strategy D -->
+    <div class="card strategy-card" style="border-left-color: var(--gold);">
+      <h4><span class="badge badge-gold">D</span> &nbsp;Trace2Skill — Direct Extraction from Annotated Segments</h4>
+      <p data-i18n="p1_d_desc">
+        Annotated trace segments (where human or LLM judges marked "skill boundaries") are
+        extracted directly as candidate skills. High precision, low recall.
+        <strong>Result:</strong> 21 curated skills, 95.24% uniqueness.
+      </p>
+    </div>
+
+    <!-- Strategy E -->
+    <div class="card strategy-card" style="border-left-color: var(--green);">
+      <h4><span class="badge badge-green">E</span> &nbsp;SkillClaw — Merge + Evolutionary Optimization (P3.3)</h4>
+      <p data-i18n="p1_e_desc">
+        Starts by merging identical tool-name sequences (canonical name normalization), then
+        applies evolutionary operators over 5 rounds. <strong>Result:</strong> 181 evolved skills,
+        96.04% coverage, 98.83% uniqueness.
+      </p>
+      <div class="trace-block" style="font-size:0.7rem;margin-top:6px;">
+        Evolution: 295 raw → 206 V1 merge → 181 evolved (38.6% compression)
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== PHASE 2: EVALUATION ====== -->
+<section id="phase2">
+  <div class="section-tag" data-i18n="tag_p2">Phase 2</div>
+  <h2 class="section-title" data-i18n="p2_title">Real-Utility <span class="accent">Evaluation</span></h2>
+  <p class="section-sub" data-i18n="p2_sub">
+    Phase 1 confidence scores were placeholders (1.0 for all golden-only skills). Phase 2
+    introduces real error-based confidence from all 7,000 traces, plus agent-vs-agent
+    benchmarking and LLM-based skill quality assessment.
+  </p>
+
+  <!-- P2.1 Error Mining -->
+  <div class="card" style="margin-bottom:22px;">
+    <h3>P2.1 — <span class="accent">Error Pattern Mining</span> (7,000 Traces Analyzed)</h3>
+    <p style="color:var(--text-secondary);font-size:0.84rem;margin-bottom:14px;" data-i18n="p2_err_desc">
+      We separate <strong>tool-level errors</strong> (API failures, timeouts, invalid parameters) from
+      <strong>answer-level errors</strong> (incorrect financial data, hallucinated metrics). This enables
+      real per-skill confidence scores — a skill may execute correctly (tool confidence = 1.0)
+      but produce wrong answers (answer confidence = 0.39).
+    </p>
+
+    <div class="grid-2">
+      <div>
+        <h4 style="font-size:0.82rem;margin-bottom:8px;color:var(--text);" data-i18n="p2_err_tool">Tool-Level Errors by Tool</h4>
+        <div>
+          <div class="error-bar"><span class="tool-label">WebFetch</span><div class="bar-fill" style="width:100%;background:var(--red);"></div><span class="bar-val">1,501</span></div>
+          <div class="error-bar"><span class="tool-label">mcp__daloopa__discover_company_series</span><div class="bar-fill" style="width:28.6%;background:#e8875b;"></div><span class="bar-val">429</span></div>
+          <div class="error-bar"><span class="tool-label">Read</span><div class="bar-fill" style="width:3.5%;background:var(--gold);"></div><span class="bar-val">52</span></div>
+          <div class="error-bar"><span class="tool-label">mcp__daloopa__get_company_fundamentals</span><div class="bar-fill" style="width:0.3%;background:var(--gold);"></div><span class="bar-val">4</span></div>
+          <div class="error-bar"><span class="tool-label">WebSearch</span><div class="bar-fill" style="width:0.2%;background:var(--gold);"></div><span class="bar-val">3</span></div>
+          <div class="error-bar"><span class="tool-label">mcp__daloopa__discover_companies</span><div class="bar-fill" style="width:0.07%;background:var(--gold);"></div><span class="bar-val">1</span></div>
+        </div>
+      </div>
+      <div>
+        <h4 style="font-size:0.82rem;margin-bottom:8px;color:var(--text);" data-i18n="p2_err_insight">Key Insights</h4>
+        <ul class="feature-list">
+          <li data-i18n="p2_err_i1"><strong>WebFetch dominates errors</strong> (75.4% of all tool errors) — unreliable for financial data extraction; consider replacement with Daloopa API calls.</li>
+          <li data-i18n="p2_err_i2"><strong>MCP namespace tools</strong> have 429× higher error rate than direct Daloopa API — namespace translation overhead causes parameter loss.</li>
+          <li data-i18n="p2_err_i3"><strong>5.15% overall tool error rate</strong> across 7,000 traces — 979 traces affected by at least one tool failure.</li>
+          <li data-i18n="p2_err_i4"><strong>Answer error rate is 29.0%</strong> (2,028 / 7,000 traces) — even tool-correct traces can produce bad financial data.</li>
+          <li data-i18n="p2_err_i5"><strong>Per-skill confidence</strong> replaces global placeholder: "Corporate Expansion Tracking" has tool_conf=1.0 but answer_conf=0.442.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- P2.2 and P2.3 -->
+  <div class="grid-2">
+    <div class="card">
+      <h3>P2.2 — Agent-vs-Agent Benchmark (50 Queries)</h3>
+      <table class="data-table" style="margin-top:8px;">
+        <thead><tr><th>Agent</th><th class="num">Success</th><th class="num">Avg Calls</th><th class="num">Latency</th><th class="num">Error Rate</th></tr></thead>
+        <tbody>
+          <tr><td><strong style="color:var(--green);">SkillAwareAgent</strong></td><td class="num">74%</td><td class="num highlight">6.0</td><td class="num highlight">3,251 ms</td><td class="num highlight">0%</td></tr>
+          <tr><td>ReActAgent</td><td class="num">90%</td><td class="num">14.0</td><td class="num">41,263 ms</td><td class="num">2.9%</td></tr>
+          <tr><td>RandomAgent</td><td class="num">60%</td><td class="num">5.0</td><td class="num">21,574 ms</td><td class="num">0%</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:0.72rem;color:var(--text-tertiary);margin-top:6px;" data-i18n="p2_bench_note">
+        SkillAwareAgent vs ReActAgent: 92.1% latency reduction, 57.1% tool call reduction, 100% error rate reduction.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3>P2.3 — LLM Skill Quality Judge</h3>
+      <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:10px;" data-i18n="p2_llm_desc">
+        Each skill is scored by an LLM judge on three dimensions (1-10 scale). Skills below threshold are flagged for evolution or deprecation.
+      </p>
+      <ul class="feature-list">
+        <li data-i18n="p2_llm_u"><strong>Usefulness:</strong> How much does this skill reduce agent workload?</li>
+        <li data-i18n="p2_llm_c"><strong>Completeness:</strong> Are all necessary sub-steps included?</li>
+        <li data-i18n="p2_llm_g"><strong>Generality:</strong> Does the skill apply across query types?</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ====== PHASE 3: OPTIMIZATION ====== -->
+<section id="phase3">
+  <div class="section-tag" data-i18n="tag_p3">Phase 3</div>
+  <h2 class="section-title" data-i18n="p3_title">Deep <span class="accent">Optimization</span></h2>
+  <p class="section-sub" data-i18n="p3_sub">
+    Three independent optimization directions: hierarchical tree structure (P3.1),
+    data-flow parameterization (P3.2), and evolutionary skill optimization (P3.3).
+  </p>
+
+  <div class="tabs-nav" id="p3-tabs">
+    <button class="tab-btn active" data-tab="p31">P3.1 — Hierarchical Tree</button>
+    <button class="tab-btn" data-tab="p32">P3.2 — Parameterization</button>
+    <button class="tab-btn" data-tab="p33">P3.3 — Evolution</button>
+  </div>
+
+  <!-- P3.1 Panel -->
+  <div class="tab-panel active" id="p31">
+    <div class="grid-2">
+      <div class="card">
+        <h3 data-i18n="p31_tree_title">5-Category Skill Taxonomy</h3>
+        <p style="color:var(--text-secondary);font-size:0.82rem;margin-bottom:12px;" data-i18n="p31_tree_desc">
+          Three boundary-detection signals (category transitions, duration spikes, I/O chain breaks) recursively partition traces into a 3-level tree with 92 nodes.
+        </p>
+        <div style="background:#fafbfc;border-radius:8px;padding:14px;font-family:var(--font-mono);">
+          <div class="tree-node root"> Financial Research (root)</div>
+          <div class="tree-node cat"> financial_direct <span class="cnt">27 skills</span></div>
+          <div class="tree-node leaf">  discover_companies → discover_company_series → get_company_fundamentals</div>
+          <div class="tree-node leaf">  discover_company_series → get_company_fundamentals</div>
+          <div class="tree-node cat"> web_search <span class="cnt">47 skills</span></div>
+          <div class="tree-node leaf">  WebSearch → WebSearch (variable-length loops)</div>
+          <div class="tree-node leaf">  google_search → google_search → google_search</div>
+          <div class="tree-node cat"> financial_mcp <span class="cnt">14 skills</span></div>
+          <div class="tree-node leaf">  mcp__daloopa__discover_companies → ...</div>
+          <div class="tree-node cat"> web_fetch <span class="cnt">2 skills</span></div>
+          <div class="tree-node cat"> file_ops <span class="cnt">2 skills</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 data-i18n="p31_signal_title">3-Signal Boundary Detection</h3>
+        <div style="margin-top:12px;">
+          <div class="strategy-card" style="border-left-color:var(--primary);">
+            <h4>1. Category Transitions</h4>
+            <p style="font-size:0.78rem;color:var(--text-secondary);">When a tool category changes (e.g., web_search → financial_direct), a sub-goal boundary is likely.</p>
+          </div>
+          <div class="strategy-card" style="border-left-color:var(--accent);">
+            <h4>2. Duration Spikes</h4>
+            <p style="font-size:0.78rem;color:var(--text-secondary);">When a tool call takes &gt;3× the median duration of its neighbors, it completes a sub-goal.</p>
+          </div>
+          <div class="strategy-card" style="border-left-color:var(--gold);">
+            <h4>3. I/O Dependency Chains</h4>
+            <p style="font-size:0.78rem;color:var(--text-secondary);">Tools sharing output→input data flow belong to the same sub-goal. Break when no flow exists.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- P3.2 Panel -->
+  <div class="tab-panel" id="p32">
+    <div class="grid-2">
+      <div class="card">
+        <h3 data-i18n="p32_param_title">Cross-Instance Voting &amp; Parameter Type Inference</h3>
+        <p style="color:var(--text-secondary);font-size:0.82rem;margin-bottom:10px;" data-i18n="p32_param_desc">
+          Instead of extracting the first template, we collect ALL instances of a skill sequence and vote on parameter types across every occurrence. This avoids overfitting to a single trace.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:0.74rem;margin-bottom:14px;">
+          <span class="badge badge-blue">variable</span>
+          <span class="badge badge-cyan">derived</span>
+          <span class="badge badge-gold">constant</span>
+          <span style="background:#f0f0f0;padding:3px 10px;border-radius:12px;font-size:0.7rem;">optional</span>
+        </div>
+        <h4 style="font-size:0.78rem;color:var(--text);" data-i18n="p32_flow_title">Top Data-Flow Pipeline (Daloopa)</h4>
+        <div class="pipeline-row" style="justify-content:flex-start;font-size:0.7rem;">
+          <div class="pipeline-node blue"><div class="tool">discover_companies</div><div class="desc">keywords: variable</div></div>
+          <span class="pipeline-arrow">→</span>
+          <div class="pipeline-node cyan"><div class="tool">discover_company_series</div><div class="desc">company_id: derived</div></div>
+          <span class="pipeline-arrow">→</span>
+          <div class="pipeline-node gold"><div class="tool">get_company_fundamentals</div><div class="desc">company_id: derived</div></div>
+        </div>
+        <p style="font-size:0.7rem;color:var(--text-tertiary);margin-top:4px;">
+          company_id match rate: <strong style="color:var(--primary);">76.4%</strong> · 2,960 instances found
+        </p>
+      </div>
+      <div class="card">
+        <h3 data-i18n="p32_impl_title">Implementation: Recursive JSON Parsing</h3>
+        <p style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:8px;" data-i18n="p32_impl_desc">
+          Daloopa API outputs are nested JSON strings wrapped in <code>{"type":"text","text":"{...}"}</code> envelopes. Our parser recursively unwraps these to extract structured keys (e.g., company_id, series_ids) for data-flow matching.
+        </p>
+        <div class="trace-block" style="font-size:0.7rem;">
+<span style="color:var(--text-tertiary);">// Step 1 output (raw)</span>
+{"type":"text","text":"{\"company_id\":320193,\"ticker\":\"AAPL\"}"}
+<span style="color:var(--text-tertiary);">// Parsed keys</span>
+<span style="color:var(--green);">company_id</span> = 320193, <span style="color:var(--green);">ticker</span> = "AAPL"
+<span style="color:var(--text-tertiary);">// Step 2 input key-matched</span>
+input: { <span style="color:var(--green);">company_id</span>: 320193 }  ← derived from Step 1
+        </div>
+        <div style="margin-top:12px;">
+          <h4 style="font-size:0.76rem;color:var(--text);" data-i18n="p32_stats_title">Parameter Statistics (Top 10 Templates)</h4>
+          <p style="font-size:0.74rem;color:var(--text-secondary);" data-i18n="p32_stats_desc">
+            10 canonical templates generated · 6 cross-step data-flow edges detected · 76.4% avg key match rate · 2,960-11,189 instances per template
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- P3.3 Panel -->
+  <div class="tab-panel" id="p33">
+    <div class="grid-2">
+      <div class="card">
+        <h3 data-i18n="p33_evo_title">Multi-Round Evolutionary Algorithm</h3>
+        <p style="color:var(--text-secondary);font-size:0.82rem;margin-bottom:10px;" data-i18n="p33_evo_desc">
+          5 rounds of evolution with 5 mutation operators + crossover, guided by a multi-objective fitness function.
+        </p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:0.72rem;margin-bottom:12px;">
+          <span class="badge badge-blue">merge_namespace</span>
+          <span class="badge badge-cyan">collapse_loop</span>
+          <span class="badge badge-blue">add_tool</span>
+          <span class="badge badge-cyan">delete_tool</span>
+          <span class="badge badge-blue">replace_tool</span>
+          <span class="badge badge-gold">crossover</span>
+          <span class="badge badge-green">elitism</span>
+        </div>
+        <h4 style="font-size:0.78rem;color:var(--text);" data-i18n="p33_fit_title">Fitness Function</h4>
+        <div class="trace-block" style="font-size:0.72rem;">
+          fitness = 0.3 × coverage + 0.3 × consensus
+                 + 0.2 × support_norm + 0.2 × (1 − uniqueness_penalty)
+        </div>
+        <ul class="feature-list" style="margin-top:10px;">
+          <li data-i18n="p33_e1"><strong>Tournament selection:</strong> k=3, pick best fitness from random triple</li>
+          <li data-i18n="p33_e2"><strong>Elitism:</strong> preserve top 20 skills per generation</li>
+          <li data-i18n="p33_e3"><strong>Convergence:</strong> stop when fitness change &lt; 0.001 between rounds</li>
+          <li data-i18n="p33_e4"><strong>Backward-compatible:</strong> V1 SkillClaw kept for Phase 1/2 pipelines</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 data-i18n="p33_result_title">Evolution Results: 5 Rounds</h3>
+        <div style="margin-top:8px;">
+          <div style="display:flex;align-items:center;gap:20px;justify-content:center;padding:16px 0;">
+            <div style="text-align:center;"><div style="font-size:2.2rem;font-weight:800;color:#C41230;">295</div><div style="font-size:0.7rem;color:var(--text-tertiary);">Raw Skills</div></div>
+            <div style="color:var(--text-tertiary);font-size:1.4rem;">→</div>
+            <div style="text-align:center;"><div style="font-size:2.2rem;font-weight:800;color:var(--gold);">206</div><div style="font-size:0.7rem;color:var(--text-tertiary);">V1 Merged</div></div>
+            <div style="color:var(--text-tertiary);font-size:1.4rem;">→</div>
+            <div style="text-align:center;"><div style="font-size:2.2rem;font-weight:800;color:var(--green);">181</div><div style="font-size:0.7rem;color:var(--text-tertiary);">Evolved</div></div>
+          </div>
+          <h4 style="font-size:0.78rem;color:var(--text);" data-i18n="p33_comp_title">Improvements over Phase 2 Baseline</h4>
+          <table class="data-table" style="margin-top:6px;">
+            <thead><tr><th>Metric</th><th class="num">Phase 2</th><th class="num">Phase 3</th><th class="num">Delta</th></tr></thead>
+            <tbody>
+              <tr><td>Skill Count</td><td class="num">206</td><td class="num highlight">181</td><td class="num delta-down">-12.1%</td></tr>
+              <tr><td>Confidence</td><td class="num">0.588</td><td class="num highlight">0.646</td><td class="num delta-up">+9.8%</td></tr>
+              <tr><td>Consensus Mean</td><td class="num">0.283</td><td class="num highlight">0.309</td><td class="num delta-up">+10.6%</td></tr>
+              <tr><td>Uniqueness</td><td class="num">0.985</td><td class="num highlight">0.988</td><td class="num">+0.3%</td></tr>
+              <tr><td>Coverage (test)</td><td class="num">0.960</td><td class="num">0.960</td><td class="num">— preserved</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== INTERACTIVE DEMO ====== -->
+<section id="demo">
+  <div class="section-tag" data-i18n="tag_demo">Live Demo</div>
+  <h2 class="section-title" data-i18n="demo_title">Interactive <span class="gold">Trace Simulator</span></h2>
+  <p class="section-sub" data-i18n="demo_sub">
+    Simulate a financial query through the mined Daloopa pipeline. Observe how FinSkillsTracer matches skills,
+    chains tool calls, and propagates derived parameters across steps — reducing tool calls from ~14 to 3.
+  </p>
+
+  <div class="demo-container">
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <h3 data-i18n="demo_query_title">Query</h3>
+        <div style="margin-bottom:10px;display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn-outline" onclick="runDemo('apple')">Apple Revenue</button>
+          <button class="btn-outline" onclick="runDemo('tsla')">Tesla EPS</button>
+          <button class="btn-outline" onclick="runDemo('multi')">Multi-Company</button>
+        </div>
+        <input type="text" id="demo-query" class="demo-input"
+          value="What was Apple Inc.'s revenue and net income for fiscal year 2024?">
+        <button class="btn" onclick="runDemo('custom')" style="margin-top:8px;" data-i18n="demo_run">Run Simulation</button>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="demo_skill_title">Matched Skills</h3>
+        <div id="skill-match-result" style="font-size:0.8rem;color:var(--text-secondary);">
+          <em data-i18n="demo_skill_placeholder">Matched skills will appear here...</em>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <h3><span class="badge badge-green" style="margin-right:6px;">SkillAwareAgent</span> <span style="font-size:0.7rem;color:var(--text-tertiary);">3 tool calls</span></h3>
+        <div id="skill-trace" style="min-height:60px;">
+          <div style="text-align:center;color:var(--text-tertiary);padding:16px;font-size:0.8rem;" data-i18n="demo_trace_placeholder">
+            Click "Run Simulation" to begin the trace...
+          </div>
+        </div>
+        <div id="skill-output" style="margin-top:8px;font-size:0.78rem;"></div>
+      </div>
+
+      <div class="card" style="opacity:0.85;">
+        <h3><span class="badge badge-red" style="margin-right:6px;">ReActAgent</span> <span style="font-size:0.7rem;color:var(--text-tertiary);">~14 tool calls</span></h3>
+        <div id="react-trace" style="font-size:0.74rem;color:var(--text-secondary);" data-i18n="demo_react_compare">
+          Without mined skills: ~14 scattered tool calls, redundant WebSearches, no parameter reuse between steps.
+          SkillAwareAgent achieves 92.1% latency reduction and 57.1% fewer tool calls.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-4" style="margin-top:22px;">
+    <div class="card metric-card">
+      <div class="big-num" id="demo-tool-calls">—</div>
+      <div class="label" data-i18n="demo_metric_calls">Tool Calls</div>
+    </div>
+    <div class="card metric-card">
+      <div class="big-num" id="demo-latency">—</div>
+      <div class="label" data-i18n="demo_metric_lat">Latency</div>
+    </div>
+    <div class="card metric-card">
+      <div class="big-num" id="demo-dataflows">—</div>
+      <div class="label" data-i18n="demo_metric_flow">Data Flow Edges</div>
+    </div>
+    <div class="card metric-card">
+      <div class="big-num" id="demo-skills">—</div>
+      <div class="label" data-i18n="demo_metric_skills">Skills Triggered</div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== RESULTS DASHBOARD ====== -->
+<section id="results">
+  <div class="section-tag" data-i18n="tag_results">Results</div>
+  <h2 class="section-title" data-i18n="results_title">Quantitative <span class="accent">Dashboard</span></h2>
+
+  <div class="card" style="margin-bottom:22px;">
+    <h3 data-i18n="results_table_title">Skill Quality Progression (Phase 1 → Phase 2 → Phase 3)</h3>
+    <table class="data-table" style="margin-top:8px;">
+      <thead><tr><th data-i18n="col_metric">Metric</th><th>Phase 1</th><th>Phase 2</th><th>Phase 3</th><th data-i18n="col_improve">Improvement</th></tr></thead>
+      <tbody>
+        <tr><td data-i18n="row_skills">Skills Discovered</td><td class="num">225</td><td class="num">225</td><td class="num highlight">181</td><td class="num delta-down">-19.6%</td></tr>
+        <tr><td data-i18n="row_cov">Coverage (test)</td><td class="num">96.04%</td><td class="num">96.04%</td><td class="num highlight">96.04%</td><td class="num" style="color:var(--text-tertiary);">Preserved</td></tr>
+        <tr><td data-i18n="row_uniq">Uniqueness</td><td class="num">99.19%</td><td class="num">98.53%</td><td class="num highlight">98.83%</td><td class="num" style="color:var(--text-tertiary);">Balanced</td></tr>
+        <tr><td data-i18n="row_conf">Confidence</td><td class="num">1.00*</td><td class="num">0.5881</td><td class="num highlight">0.6458</td><td class="num delta-up">+9.8%</td></tr>
+        <tr><td data-i18n="row_cons">Consensus Mean</td><td class="num">0.2791</td><td class="num">0.2791</td><td class="num highlight">0.3088</td><td class="num delta-up">+10.6%</td></tr>
+        <tr><td data-i18n="row_high">High Consensus</td><td class="num">66/225</td><td class="num">66/225</td><td class="num">7/181</td><td class="num" style="color:var(--text-tertiary);">Stricter</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:8px;font-size:0.7rem;color:var(--text-tertiary);">
+      * Phase 1 confidence placeholder (golden-only). Phase 2 introduced error-based confidence from all 7,000 traces.
+      Phase 3 improved real confidence +9.8% and consensus mean +10.6%.
+    </p>
+  </div>
+
+  <div class="grid-2">
+    <div class="card"><h3 data-i18n="chart_ablation_title">Ablation Study: Strategy Comparison</h3><div class="chart-wrap"><canvas id="chart-ablation"></canvas></div></div>
+    <div class="card"><h3 data-i18n="chart_agent_title">Agent-vs-Agent Benchmark</h3><div class="chart-wrap"><canvas id="chart-agent"></canvas></div></div>
+    <div class="card"><h3 data-i18n="chart_phase_title">Phase-by-Phase Progression</h3><div class="chart-wrap"><canvas id="chart-phase"></canvas></div></div>
+    <div class="card"><h3 data-i18n="chart_compare_title">SkillAwareAgent vs ReActAgent</h3><div class="chart-wrap"><canvas id="chart-compare"></canvas></div></div>
+  </div>
+
+  <div class="card" style="margin-top:22px;text-align:center;">
+    <h3 data-i18n="impact_title">Impact Summary</h3>
+    <div style="display:flex;gap:40px;justify-content:center;margin-top:16px;flex-wrap:wrap;">
+      <div><div style="font-size:2rem;font-weight:800;color:var(--primary);">92.1%</div><div style="font-size:0.78rem;color:var(--text-tertiary);" data-i18n="impact_lat">Latency Reduction</div></div>
+      <div><div style="font-size:2rem;font-weight:800;color:var(--gold);">57.1%</div><div style="font-size:0.78rem;color:var(--text-tertiary);" data-i18n="impact_calls">Fewer Tool Calls</div></div>
+      <div><div style="font-size:2rem;font-weight:800;color:var(--green);">100%</div><div style="font-size:0.78rem;color:var(--text-tertiary);" data-i18n="impact_err">Error Reduction</div></div>
+      <div><div style="font-size:2rem;font-weight:800;color:var(--accent);">38.6%</div><div style="font-size:0.78rem;color:var(--text-tertiary);" data-i18n="impact_compress">Skill Compression</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>
+    <strong>FinSkillsTracer</strong> — Trace-to-Skills Mining for Financial AI Agents<br>
+    <a href="https://github.com/betalau/FinSkillsTracer" target="_blank">github.com/betalau/FinSkillsTracer</a>
+    &nbsp;·&nbsp;
+    Dataset: <a href="https://huggingface.co/datasets/daloopa/finretrieval" target="_blank">daloopa/finretrieval</a> on HuggingFace
+    &nbsp;·&nbsp;
+    7,000 traces · 14 LLM configs · 17 tool types
+  </div>
+</footer>
+
+<!-- ====== SCRIPTS ====== -->
+<script>
+// ============================================================
+// i18n — English / Chinese Translation System
+// ============================================================
+const i18n = {
+  en: {
+    nav_home: 'Home', nav_bg: 'Background', nav_arch: 'Architecture',
+    nav_p1: 'Mining', nav_p2: 'Evaluation', nav_p3: 'Optimization',
+    nav_demo: 'Demo', nav_results: 'Results',
+    hero_title2: 'Trace-to-Skills Mining',
+    hero_tagline: 'Automated discovery, parameterization, evaluation, and evolution of reusable agent skills from 7,000 financial retrieval traces across 14 LLM configurations — making AI agents faster and more accurate without manual skill authoring.',
+    stat_cov: 'Test Coverage', stat_lat: 'Latency Reduction', stat_skills: 'Evolved Skills', stat_models: 'LLM Configs',
+    tag_bg: 'Problem Statement',
+    bg_title: 'The <span class="accent">Skill Gap</span> in Financial AI Agents',
+    bg_sub: 'Modern LLM-powered agents rely on tool-calling to answer complex financial queries. However, hand-crafting agent skills is expensive, brittle across model configurations, and does not scale. FinSkillsTracer addresses this gap by automatically mining skills from execution traces.',
+    bg_without_title: 'Without Pre-Mined Skills (ReAct Loop)',
+    bg_with_title: 'With FinSkillsTracer Skills (SkillAware Agent)',
+    bg_bad_calls: '~14 tool calls', bg_bad_lat: '~41s latency', bg_bad_err: '2.9% error rate', bg_bad_redun: 'High redundancy',
+    bg_good_calls: '6 tool calls', bg_good_lat: '~3.2s latency', bg_good_err: '0% error rate', bg_good_flow: 'Parameter reuse',
+    bg_challenge_title: 'Core Challenges Addressed',
+    bg_c1_title: 'Tool Proliferation', bg_c1_desc: '17 tool types across 14 LLM configs create combinatorial explosion — agents waste calls on redundant exploration instead of exploiting known patterns.',
+    bg_c2_title: 'Configuration Fragility', bg_c2_desc: 'Skills hand-tuned for one model break on others. Our cross-model consensus mechanism validates skills that generalize across all 14 configurations.',
+    bg_c3_title: 'Parameter Wiring', bg_c3_desc: 'Tool outputs must feed into subsequent tool inputs. Manual wiring is error-prone; automated data-flow detection achieves 76.4% parameter match rates.',
+    tag_data: 'Dataset',
+    data_sub: 'From HuggingFace <a href="https://huggingface.co/datasets/daloopa/finretrieval" target="_blank" style="color:var(--primary);">daloopa/finretrieval</a> — 7,000 tool-call traces generated by 14 LLM configurations answering 500 financial queries using 17 financial API tools.',
+    data_traces: 'Tool-call Traces', data_queries: 'Financial Queries', data_models: 'LLM Configurations', data_tools: 'Tool Types',
+    tag_arch: 'Solution Architecture',
+    arch_title: 'Three-Phase <span class="accent">Optimization</span> Pipeline',
+    arch_sub: 'The pipeline processes raw traces through three stages: Mine (discover candidate skills from traces), Evaluate (measure real utility with error mining and benchmarks), and Optimize (evolve skills through mutation, crossover, and data-flow parameterization).',
+    tag_p1: 'Phase 1',
+    p1_title: 'Skill <span class="accent">Mining</span> — Five Complementary Strategies',
+    p1_sub: 'Five distinct mining strategies are applied to the same 7,000 traces. Each uncovers a different class of reusable patterns. Strategies A and E dominate on coverage; B-D provide semantic and structural signals for downstream evolution.',
+    p1_a_desc: 'Sliding-window enumeration of all tool-name subsequences (length 2-5) across all traces. Patterns appearing ≥ min_support (5) traces are promoted to candidate skills. <strong>Result:</strong> 177 skills, 96.04% coverage, 24.9% consensus rate.',
+    p1_b_desc: 'Tool sequences are embedded as feature vectors and clustered via k-means (k=10). Each cluster centroid triggers an LLM-generated skill name and natural-language description. <strong>Result:</strong> 10 semantically coherent skill clusters.',
+    p1_c_desc: 'Three signal types detect sub-goal boundaries in traces: (1) tool-category transitions, (2) duration spikes (>3× median neighbor), (3) I/O dependency chain breaks. Recursively segments traces into a 3-level tree. <strong>Result:</strong> 87 skills, 5 categories.',
+    p1_d_desc: 'Annotated trace segments (where human or LLM judges marked "skill boundaries") are extracted directly as candidate skills. High precision, low recall. <strong>Result:</strong> 21 curated skills, 95.24% uniqueness.',
+    p1_e_desc: 'Starts by merging identical tool-name sequences (canonical name normalization), then applies evolutionary operators over 5 rounds. <strong>Result:</strong> 181 evolved skills, 96.04% coverage, 98.83% uniqueness.',
+    tag_p2: 'Phase 2',
+    p2_title: 'Real-Utility <span class="accent">Evaluation</span>',
+    p2_sub: 'Phase 1 confidence scores were placeholders (1.0 for all golden-only skills). Phase 2 introduces real error-based confidence from all 7,000 traces, plus agent-vs-agent benchmarking and LLM-based skill quality assessment.',
+    p2_err_desc: 'We separate <strong>tool-level errors</strong> (API failures, timeouts, invalid parameters) from <strong>answer-level errors</strong> (incorrect financial data, hallucinated metrics). This enables real per-skill confidence scores — a skill may execute correctly (tool confidence = 1.0) but produce wrong answers (answer confidence = 0.39).',
+    p2_err_tool: 'Tool-Level Errors by Tool',
+    p2_err_insight: 'Key Insights',
+    p2_err_i1: '<strong>WebFetch dominates errors</strong> (75.4% of all tool errors) — unreliable for financial data extraction; consider replacement with Daloopa API calls.',
+    p2_err_i2: '<strong>MCP namespace tools</strong> have 429× higher error rate than direct Daloopa API — namespace translation overhead causes parameter loss.',
+    p2_err_i3: '<strong>5.15% overall tool error rate</strong> across 7,000 traces — 979 traces affected by at least one tool failure.',
+    p2_err_i4: '<strong>Answer error rate is 29.0%</strong> (2,028 / 7,000 traces) — even tool-correct traces can produce bad financial data.',
+    p2_err_i5: '<strong>Per-skill confidence</strong> replaces global placeholder: "Corporate Expansion Tracking" has tool_conf=1.0 but answer_conf=0.442.',
+    p2_bench_note: 'SkillAwareAgent vs ReActAgent: 92.1% latency reduction, 57.1% tool call reduction, 100% error rate reduction.',
+    p2_llm_desc: 'Each skill is scored by an LLM judge on three dimensions (1-10 scale). Skills below threshold are flagged for evolution or deprecation.',
+    p2_llm_u: '<strong>Usefulness:</strong> How much does this skill reduce agent workload?',
+    p2_llm_c: '<strong>Completeness:</strong> Are all necessary sub-steps included?',
+    p2_llm_g: '<strong>Generality:</strong> Does the skill apply across query types?',
+    tag_p3: 'Phase 3',
+    p3_title: 'Deep <span class="accent">Optimization</span>',
+    p3_sub: 'Three independent optimization directions: hierarchical tree structure (P3.1), data-flow parameterization (P3.2), and evolutionary skill optimization (P3.3).',
+    p31_tree_title: '5-Category Skill Taxonomy',
+    p31_tree_desc: 'Three boundary-detection signals (category transitions, duration spikes, I/O chain breaks) recursively partition traces into a 3-level tree with 92 nodes.',
+    p31_signal_title: '3-Signal Boundary Detection',
+    p32_param_title: 'Cross-Instance Voting & Parameter Type Inference',
+    p32_param_desc: 'Instead of extracting the first template, we collect ALL instances of a skill sequence and vote on parameter types across every occurrence. This avoids overfitting to a single trace.',
+    p32_flow_title: 'Top Data-Flow Pipeline (Daloopa)',
+    p32_impl_title: 'Implementation: Recursive JSON Parsing',
+    p32_impl_desc: 'Daloopa API outputs are nested JSON strings wrapped in <code>{"type":"text","text":"{...}"}</code> envelopes. Our parser recursively unwraps these to extract structured keys (e.g., company_id, series_ids) for data-flow matching.',
+    p32_stats_title: 'Parameter Statistics (Top 10 Templates)',
+    p32_stats_desc: '10 canonical templates generated · 6 cross-step data-flow edges detected · 76.4% avg key match rate · 2,960-11,189 instances per template',
+    p33_evo_title: 'Multi-Round Evolutionary Algorithm',
+    p33_evo_desc: '5 rounds of evolution with 5 mutation operators + crossover, guided by a multi-objective fitness function.',
+    p33_fit_title: 'Fitness Function',
+    p33_e1: '<strong>Tournament selection:</strong> k=3, pick best fitness from random triple',
+    p33_e2: '<strong>Elitism:</strong> preserve top 20 skills per generation',
+    p33_e3: '<strong>Convergence:</strong> stop when fitness change < 0.001 between rounds',
+    p33_e4: '<strong>Backward-compatible:</strong> V1 SkillClaw kept for Phase 1/2 pipelines',
+    p33_result_title: 'Evolution Results: 5 Rounds',
+    p33_comp_title: 'Improvements over Phase 2 Baseline',
+    tag_demo: 'Live Demo',
+    demo_title: 'Interactive <span class="gold">Trace Simulator</span>',
+    demo_sub: 'Simulate a financial query through the mined Daloopa pipeline. Observe how FinSkillsTracer matches skills, chains tool calls, and propagates derived parameters across steps — reducing tool calls from ~14 to 3.',
+    demo_query_title: 'Query',
+    demo_run: 'Run Simulation',
+    demo_skill_title: 'Matched Skills',
+    demo_skill_placeholder: 'Matched skills will appear here...',
+    demo_trace_placeholder: 'Click "Run Simulation" to begin the trace...',
+    demo_react_compare: 'Without mined skills: ~14 scattered tool calls, redundant WebSearches, no parameter reuse between steps. SkillAwareAgent achieves 92.1% latency reduction and 57.1% fewer tool calls.',
+    demo_metric_calls: 'Tool Calls', demo_metric_lat: 'Latency', demo_metric_flow: 'Data Flow Edges', demo_metric_skills: 'Skills Triggered',
+    tag_results: 'Results',
+    results_title: 'Quantitative <span class="accent">Dashboard</span>',
+    results_table_title: 'Skill Quality Progression (Phase 1 → Phase 2 → Phase 3)',
+    col_metric: 'Metric', col_improve: 'Improvement',
+    row_skills: 'Skills Discovered', row_cov: 'Coverage (test)', row_uniq: 'Uniqueness', row_conf: 'Confidence', row_cons: 'Consensus Mean', row_high: 'High Consensus',
+    chart_ablation_title: 'Ablation Study: Strategy Comparison',
+    chart_agent_title: 'Agent-vs-Agent Benchmark',
+    chart_phase_title: 'Phase-by-Phase Progression',
+    chart_compare_title: 'SkillAwareAgent vs ReActAgent',
+    impact_title: 'Impact Summary',
+    impact_lat: 'Latency Reduction', impact_calls: 'Fewer Tool Calls', impact_err: 'Error Reduction', impact_compress: 'Skill Compression',
+  },
+  zh: {
+    nav_home: '首页', nav_bg: '背景', nav_arch: '架构',
+    nav_p1: '挖掘', nav_p2: '评估', nav_p3: '优化',
+    nav_demo: '演示', nav_results: '结果',
+    hero_title2: '从执行轨迹到技能挖掘',
+    hero_tagline: '自动从7,000条金融检索轨迹中发现、参数化、评估和进化可复用的智能体技能——覆盖14种LLM配置，无需手动编写即可让AI智能体更快更准。',
+    stat_cov: '测试覆盖率', stat_lat: '延迟降低', stat_skills: '进化后技能数', stat_models: 'LLM配置数',
+    tag_bg: '问题定义',
+    bg_title: '金融AI智能体的<span class="accent">技能鸿沟</span>',
+    bg_sub: '现代LLM智能体依赖工具调用来回答复杂金融查询。然而，手工编写智能体技能成本高昂，在不同模型配置间脆弱易碎，且难以规模化。FinSkillsTracer通过从执行轨迹中自动挖掘技能来填补这一空白。',
+    bg_without_title: '无预挖掘技能（ReAct循环）',
+    bg_with_title: '使用FinSkillsTracer技能（SkillAware智能体）',
+    bg_bad_calls: '~14次工具调用', bg_bad_lat: '~41秒延迟', bg_bad_err: '2.9%错误率', bg_bad_redun: '高冗余度',
+    bg_good_calls: '6次工具调用', bg_good_lat: '~3.2秒延迟', bg_good_err: '0%错误率', bg_good_flow: '参数复用',
+    bg_challenge_title: '解决的核心挑战',
+    bg_c1_title: '工具扩散', bg_c1_desc: '14种LLM配置下17种工具类型造成组合爆炸——智能体在冗余探索上浪费调用，而非利用已知模式。',
+    bg_c2_title: '配置脆弱性', bg_c2_desc: '为一个模型手工调优的技能在其他模型上失效。我们的跨模型共识机制验证能在全部14种配置上泛化的技能。',
+    bg_c3_title: '参数传递', bg_c3_desc: '工具输出必须传递给后续工具输入。手动连线容易出错；自动化数据流检测实现76.4%的参数匹配率。',
+    tag_data: '数据集',
+    data_sub: '来自HuggingFace <a href="https://huggingface.co/datasets/daloopa/finretrieval" target="_blank" style="color:var(--primary);">daloopa/finretrieval</a>——14种LLM配置在500个金融查询上使用17种金融API工具生成的7,000条工具调用轨迹。',
+    data_traces: '工具调用轨迹', data_queries: '金融查询', data_models: 'LLM配置', data_tools: '工具类型',
+    tag_arch: '方案架构',
+    arch_title: '三阶段<span class="accent">优化</span>流水线',
+    arch_sub: '流水线通过三个阶段处理原始轨迹：挖掘（从轨迹中发现候选技能）、评估（通过错误挖掘和基准测试衡量真实效用）、优化（通过变异、交叉和数据流参数化进化技能）。',
+    tag_p1: '第一阶段',
+    p1_title: '技能<span class="accent">挖掘</span>——五种互补策略',
+    p1_sub: '对相同的7,000条轨迹应用五种不同的挖掘策略。每种策略发现不同类型可复用模式。策略A和E在覆盖率上占主导；B-D为后续进化提供语义和结构信号。',
+    p1_a_desc: '滑动窗口枚举所有轨迹中长度2-5的工具名子序列。出现次数≥最小支持度（5）的模式提升为候选技能。<strong>结果：</strong>177个技能，96.04%覆盖率，24.9%共识率。',
+    p1_b_desc: '工具序列编码为特征向量，通过k-means（k=10）聚类。每个聚类中心触发LLM生成的技能名称和自然语言描述。<strong>结果：</strong>10个语义连贯的技能簇。',
+    p1_c_desc: '三种信号检测轨迹中的子目标边界：(1)工具类别转换，(2)耗时异常（>邻居中位数3倍），(3)I/O依赖链断裂。递归分割轨迹为3级树。<strong>结果：</strong>87个技能，5个类别。',
+    p1_d_desc: '直接从标注轨迹段（人工或LLM判断标记"技能边界"）中提取候选技能。高精度，低召回率。<strong>结果：</strong>21个精选技能，95.24%唯一性。',
+    p1_e_desc: '从合并相同工具名序列（规范化名称）开始，然后在5轮迭代中应用进化算子。<strong>结果：</strong>181个进化技能，96.04%覆盖率，98.83%唯一性。',
+    tag_p2: '第二阶段',
+    p2_title: '真实效用<span class="accent">评估</span>',
+    p2_sub: '第一阶段置信度分数是占位符（仅金标技能为1.0）。第二阶段引入了来自全部7,000条轨迹的基于真实错误的置信度，以及智能体对比基准测试和基于LLM的技能质量评估。',
+    p2_err_desc: '我们区分<strong>工具级错误</strong>（API失败、超时、无效参数）和<strong>答案级错误</strong>（错误的财务数据、幻觉指标）。这使得真实的逐技能置信度成为可能——一个技能可能正确执行（工具置信度=1.0）但产生错误答案（答案置信度=0.39）。',
+    p2_err_tool: '按工具分类的工具级错误',
+    p2_err_insight: '关键洞察',
+    p2_err_i1: '<strong>WebFetch主导错误</strong>（占所有工具错误的75.4%）——对金融数据提取不可靠；考虑替换为Daloopa API调用。',
+    p2_err_i2: '<strong>MCP命名空间工具</strong>的错误率是直接Daloopa API的429倍——命名空间转换开销导致参数丢失。',
+    p2_err_i3: '<strong>整体工具错误率5.15%</strong>，覆盖7,000条轨迹——979条轨迹至少受到一次工具故障影响。',
+    p2_err_i4: '<strong>答案错误率29.0%</strong>（7,000条轨迹中的2,028条）——即使工具正确的轨迹也可能产出错误的财务数据。',
+    p2_err_i5: '<strong>逐技能置信度</strong>替代全局占位符："企业扩张追踪"工具置信度=1.0，但答案置信度=0.442。',
+    p2_bench_note: 'SkillAwareAgent vs ReActAgent：延迟降低92.1%，工具调用减少57.1%，错误率降低100%。',
+    p2_llm_desc: '每个技能由LLM评委在三个维度上评分（1-10分制）。低于阈值的技能被标记为需要进化或弃用。',
+    p2_llm_u: '<strong>有用性：</strong>该技能能在多大程度上减少智能体工作负载？',
+    p2_llm_c: '<strong>完整性：</strong>是否包含所有必要的子步骤？',
+    p2_llm_g: '<strong>通用性：</strong>该技能是否适用于不同类型的查询？',
+    tag_p3: '第三阶段',
+    p3_title: '深度<span class="accent">优化</span>',
+    p3_sub: '三个独立的优化方向：层次化树结构（P3.1）、数据流参数化（P3.2）和进化技能优化（P3.3）。',
+    p31_tree_title: '5类别技能分类法',
+    p31_tree_desc: '三种边界检测信号（类别转换、耗时异常、I/O链断裂）将轨迹递归分割为包含92个节点的3级树。',
+    p31_signal_title: '三信号边界检测',
+    p32_param_title: '跨实例投票与参数类型推断',
+    p32_param_desc: '不再提取第一个模板，而是收集技能序列的全部实例，对每个参数槽位的类型进行跨实例投票。这避免了对单条轨迹的过拟合。',
+    p32_flow_title: '顶级数据流管道（Daloopa）',
+    p32_impl_title: '实现：递归JSON解析',
+    p32_impl_desc: 'Daloopa API输出是嵌套在<code>{"type":"text","text":"{...}"}</code>信封中的JSON字符串。我们的解析器递归解包提取结构化键（如company_id、series_ids）以进行数据流匹配。',
+    p32_stats_title: '参数统计（前10个模板）',
+    p32_stats_desc: '生成10个规范化模板 · 检测到6条跨步骤数据流边 · 76.4%平均键匹配率 · 每个模板2,960-11,189个实例',
+    p33_evo_title: '多轮进化算法',
+    p33_evo_desc: '5轮进化，5种变异算子+交叉，由多目标适应度函数引导。',
+    p33_fit_title: '适应度函数',
+    p33_e1: '<strong>锦标赛选择：</strong>k=3，从随机三元组中选取最佳适应度',
+    p33_e2: '<strong>精英保留：</strong>每代保留前20个技能',
+    p33_e3: '<strong>收敛条件：</strong>适应度变化 < 0.001 时停止',
+    p33_e4: '<strong>向后兼容：</strong>V1 SkillClaw保留给Phase 1/2管线使用',
+    p33_result_title: '进化结果：5轮迭代',
+    p33_comp_title: '相对于Phase 2基线的改进',
+    tag_demo: '实时演示',
+    demo_title: '交互式<span class="gold">轨迹模拟器</span>',
+    demo_sub: '模拟金融查询经过挖掘出的Daloopa管道。观察FinSkillsTracer如何匹配技能、链接工具调用并在步骤间传播派生参数——将工具调用从~14次减少到3次。',
+    demo_query_title: '查询',
+    demo_run: '运行模拟',
+    demo_skill_title: '匹配的技能',
+    demo_skill_placeholder: '匹配的技能将在此处显示...',
+    demo_trace_placeholder: '点击"运行模拟"开始追踪...',
+    demo_react_compare: '无挖掘技能：约14次散乱工具调用，冗余WebSearch，步骤间无参数复用。SkillAwareAgent实现92.1%延迟降低和57.1%工具调用减少。',
+    demo_metric_calls: '工具调用', demo_metric_lat: '延迟', demo_metric_flow: '数据流边', demo_metric_skills: '触发技能',
+    tag_results: '结果',
+    results_title: '量化<span class="accent">数据看板</span>',
+    results_table_title: '技能质量演进（Phase 1 → Phase 2 → Phase 3）',
+    col_metric: '指标', col_improve: '改进',
+    row_skills: '发现技能', row_cov: '测试覆盖率', row_uniq: '唯一性', row_conf: '置信度', row_cons: '共识均值', row_high: '高共识',
+    chart_ablation_title: '消融研究：策略对比',
+    chart_agent_title: '智能体对比基准测试',
+    chart_phase_title: '阶段递进指标',
+    chart_compare_title: 'SkillAwareAgent vs ReActAgent',
+    impact_title: '影响力摘要',
+    impact_lat: '延迟降低', impact_calls: '工具调用减少', impact_err: '错误率降低', impact_compress: '技能压缩率',
+  }
+};
+
+let currentLang = 'en';
+
+function toggleLang() {
+  currentLang = currentLang === 'en' ? 'zh' : 'en';
+  const btn = document.getElementById('lang-btn');
+  const icon = document.getElementById('lang-icon');
+  const label = document.getElementById('lang-label');
+  if (currentLang === 'zh') {
+    icon.textContent = 'EN'; label.textContent = 'English';
+    document.documentElement.lang = 'zh';
+  } else {
+    icon.textContent = '中'; label.textContent = '中文';
+    document.documentElement.lang = 'en';
+  }
+  applyTranslations();
+}
+
+function applyTranslations() {
+  const dict = i18n[currentLang];
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (dict[key]) {
+      // Handle HTML content (with <span>, <strong> etc.)
+      if (dict[key].includes('<')) {
+        el.innerHTML = dict[key];
+      } else {
+        el.textContent = dict[key];
+      }
+    }
+  });
+}
+
+// ============================================================
+// P3 Tab Switching
+// ============================================================
+document.querySelectorAll('#p3-tabs .tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#p3-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#phase3 .tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ============================================================
+// Charts (Chart.js)
+// ============================================================
+const cc = {
+  blue: 'rgba(0,80,150,0.75)', blueBg: 'rgba(0,80,150,0.08)',
+  cyan: 'rgba(30,185,225,0.75)', cyanBg: 'rgba(30,185,225,0.08)',
+  gold: 'rgba(200,150,62,0.75)', goldBg: 'rgba(200,150,62,0.08)',
+  green: 'rgba(26,140,94,0.75)', greenBg: 'rgba(26,140,94,0.08)',
+  red: 'rgba(196,18,48,0.75)', redBg: 'rgba(196,18,48,0.08)',
+};
+const co = (extra) => ({
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { labels: { color: '#5a6d80', font: { size: 10 }, padding: 14, usePointStyle: true, pointStyleWidth: 8 } } },
+  scales: {
+    x: { ticks: { color: '#8a9bb0', font: { size: 9 } }, grid: { color: '#EEF2F5' } },
+    y: { ticks: { color: '#8a9bb0', font: { size: 9 } }, grid: { color: '#EEF2F5' } },
+  },
+  ...extra
+});
+
+new Chart(document.getElementById('chart-ablation'), {
+  type: 'bar',
+  data: {
+    labels: ['A:FSP', 'B:Semantic', 'C:Hierarchical', 'D:Trace2Skill', 'E:SkillClaw'],
+    datasets: [
+      { label: 'Skills', data: [177, 10, 87, 21, 206], backgroundColor: cc.blueBg, borderColor: cc.blue, borderWidth: 1.5 },
+      { label: 'Coverage %', data: [96.0, 22.0, 27.1, 16.9, 96.0], backgroundColor: cc.greenBg, borderColor: cc.green, borderWidth: 1.5 },
+      { label: 'Consensus %', data: [24.9, 10.0, 0, 0, 28.2], backgroundColor: cc.goldBg, borderColor: cc.gold, borderWidth: 1.5 },
+    ]
+  },
+  options: co({})
+});
+
+new Chart(document.getElementById('chart-agent'), {
+  type: 'bar',
+  data: {
+    labels: ['Task Success %', 'Avg Calls', 'Latency (s)', 'Error Rate %'],
+    datasets: [
+      { label: 'SkillAwareAgent', data: [74, 6, 3.25, 0], backgroundColor: cc.greenBg, borderColor: cc.green, borderWidth: 2 },
+      { label: 'ReActAgent', data: [90, 14, 41.3, 2.9], backgroundColor: cc.blueBg, borderColor: cc.blue, borderWidth: 2 },
+      { label: 'RandomAgent', data: [60, 5, 21.6, 0], backgroundColor: cc.goldBg, borderColor: cc.gold, borderWidth: 2 },
+    ]
+  },
+  options: co({})
+});
+
+new Chart(document.getElementById('chart-phase'), {
+  type: 'line',
+  data: {
+    labels: ['Phase 1', 'Phase 2', 'Phase 3'],
+    datasets: [
+      { label: 'Coverage %', data: [96.04, 96.04, 96.04], borderColor: '#1a8c5e', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.3, pointRadius: 4, pointBackgroundColor: '#1a8c5e' },
+      { label: 'Confidence ×100', data: [100, 58.8, 64.6], borderColor: '#005096', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.3, pointRadius: 4, pointBackgroundColor: '#005096' },
+      { label: 'Consensus ×100', data: [27.9, 27.9, 30.9], borderColor: '#C8963E', backgroundColor: 'transparent', borderWidth: 2.5, tension: 0.3, pointRadius: 4, pointBackgroundColor: '#C8963E' },
+    ]
+  },
+  options: co({})
+});
+
+new Chart(document.getElementById('chart-compare'), {
+  type: 'bar',
+  data: {
+    labels: ['Latency\nReduction', 'Tool Call\nReduction', 'Error Rate\nReduction'],
+    datasets: [
+      { label: 'SkillAware vs ReAct', data: [92.1, 57.1, 100], backgroundColor: [cc.greenBg, cc.blueBg, cc.cyanBg], borderColor: [cc.green, cc.blue, cc.cyan], borderWidth: 2 },
+    ]
+  },
+  options: co({ plugins: { legend: { display: false } } })
+});
+
+// ============================================================
+// LIVE DEMO: Skill Trace Simulator
+// ============================================================
+const demoData = {
+  apple: {
+    query: "What was Apple Inc.'s revenue and net income for fiscal year 2024?",
+    skills: [
+      { id: 'fsp_4395', name: 'Daloopa Financial Pipeline', seq: ['discover_companies','discover_company_series','get_company_fundamentals'], support: 3293, consensus: 0.571 },
+      { id: 'fsp_9595', name: 'Company Series → Fundamentals', seq: ['discover_company_series','get_company_fundamentals'], support: 3872, consensus: 0.429 },
+    ],
+    trace: [
+      { tool: 'discover_companies', input: { keywords:['Apple','AAPL'] }, output: { company_id:320193, company_name:'Apple Inc.', ticker:'AAPL' }, latency: 420 },
+      { tool: 'discover_company_series', input: { company_id:320193, keywords:['revenue','net income'], periods:['FY2024'] }, output: { series_ids:['RETAIL_REV','NET_INC_Q'] }, latency: 580, derived:['company_id'] },
+      { tool: 'get_company_fundamentals', input: { company_id:320193, series_ids:['RETAIL_REV','NET_INC_Q'], periods:['FY2024'] }, output: { 'Revenue':'$391,035,000,000', 'Net Income':'$93,736,000,000' }, latency: 380, derived:['company_id','series_ids'] },
+    ]
+  },
+  tsla: {
+    query: "What was Tesla's earnings per share for Q3 and Q4 of fiscal year 2024?",
+    skills: [
+      { id: 'fsp_4395', name: 'Daloopa Financial Pipeline', seq: ['discover_companies','discover_company_series','get_company_fundamentals'], support: 3293, consensus: 0.571 },
+    ],
+    trace: [
+      { tool: 'discover_companies', input: { keywords:['Tesla','TSLA'] }, output: { company_id:219863, company_name:'Tesla Inc.', ticker:'TSLA' }, latency: 395 },
+      { tool: 'discover_company_series', input: { company_id:219863, keywords:['earnings per share','EPS'], periods:['Q3FY2024','Q4FY2024'] }, output: { series_ids:['EPS_DILUTED'] }, latency: 510, derived:['company_id'] },
+      { tool: 'get_company_fundamentals', input: { company_id:219863, series_ids:['EPS_DILUTED'], periods:['Q3FY2024','Q4FY2024'] }, output: { 'EPS_Q3':'$0.72', 'EPS_Q4':'$0.73' }, latency: 355, derived:['company_id','series_ids'] },
+    ]
+  },
+  multi: {
+    query: "Compare revenue growth rates of Apple, Microsoft, and Google for FY2023-FY2024",
+    skills: [
+      { id: 'fsp_4395', name: 'Daloopa Financial Pipeline', seq: ['discover_companies','discover_company_series','get_company_fundamentals'], support: 3293, consensus: 0.571 },
+      { id: 'fsp_4194', name: 'Multi-Period Fundamentals', seq: ['discover_companies','discover_company_series','get_company_fundamentals','get_company_fundamentals'], support: 263, consensus: 0.286 },
+    ],
+    trace: [
+      { tool: 'discover_companies', input: { keywords:['Apple','Microsoft','Google'] }, output: { companies: [ {company_id:320193,name:'Apple'}, {company_id:219864,name:'Microsoft'}, {company_id:219865,name:'Alphabet'} ] }, latency: 480 },
+      { tool: 'discover_company_series', input: { company_id:320193, keywords:['revenue growth'], periods:['FY2023','FY2024'] }, output: { series_ids:['REV_GROWTH_YOY'] }, latency: 560, derived:['company_id'] },
+      { tool: 'get_company_fundamentals', input: { company_id:320193, series_ids:['REV_GROWTH_YOY'], periods:['FY2023','FY2024'] }, output: { 'FY23_Growth':'5.7%', 'FY24_Growth':'8.3%' }, latency: 370, derived:['company_id','series_ids'] },
+    ]
+  }
+};
+
+function runDemo(scenario) {
+  let data;
+  if (scenario === 'custom') {
+    const q = document.getElementById('demo-query').value.trim().toLowerCase();
+    if (q.includes('tesla') || q.includes('eps')) data = demoData.tsla;
+    else if (q.includes('compare') || q.includes('multi') || q.includes('microsoft') || q.includes('google')) data = demoData.multi;
+    else data = demoData.apple;
+  } else {
+    data = demoData[scenario];
+  }
+  document.getElementById('demo-query').value = data.query;
+  document.getElementById('skill-trace').innerHTML = '';
+  document.getElementById('skill-output').innerHTML = '';
+  ['demo-tool-calls','demo-latency','demo-dataflows','demo-skills'].forEach(id => document.getElementById(id).textContent = '—');
+
+  const matchDiv = document.getElementById('skill-match-result');
+  matchDiv.innerHTML = data.skills.map(s =>
+    `<div style="margin-bottom:8px;padding:10px;background:var(--primary-light);border-radius:6px;border-left:3px solid var(--primary);">
+      <strong style="color:var(--primary);">${s.name}</strong>
+      <span style="color:var(--text-tertiary);font-size:0.7rem;margin-left:8px;">support: ${s.support} · consensus: ${s.consensus}</span>
+      <div style="font-family:var(--font-mono);font-size:0.7rem;color:var(--accent);margin-top:3px;">
+        ${s.seq.map((t,i) => '<span class="tool-name">'+t+'</span>' + (i<s.seq.length-1?' <span class="arrow">→</span> ':'')).join('')}
+      </div>
+    </div>`
+  ).join('');
+
+  const container = document.getElementById('skill-trace');
+  let totalLat = 0, dataFlows = 0;
+  data.trace.forEach((step, i) => {
+    setTimeout(() => {
+      totalLat += step.latency;
+      dataFlows += (step.derived || []).length;
+      const div = document.createElement('div');
+      div.className = 'step-anim';
+      div.style.cssText = 'margin-bottom:10px;padding:10px 14px;background:var(--primary-light);border-radius:6px;border-left:3px solid var(--primary);';
+      div.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-family:var(--font-mono);color:var(--primary);font-weight:600;font-size:0.8rem;">${step.tool}</span>
+          <span style="font-size:0.66rem;color:var(--text-tertiary);">${step.latency}ms</span>
+        </div>
+        <div style="font-size:0.7rem;color:var(--text-secondary);margin-top:3px;">
+          <span style="color:#8e24aa;">input:</span> ${JSON.stringify(step.input).replace(/"/g,'').slice(0,75)}...
+        </div>
+        <div style="font-size:0.7rem;color:var(--green);margin-top:2px;">
+          <span style="color:var(--green);">output:</span> ${JSON.stringify(step.output).replace(/"/g,'').slice(0,75)}...
+        </div>
+        ${step.derived ? '<div style="font-size:0.66rem;color:var(--gold);margin-top:2px;">↳ derived: '+step.derived.join(', ')+'</div>' : ''}
+      `;
+      container.appendChild(div);
+      document.getElementById('demo-tool-calls').textContent = i+1;
+      document.getElementById('demo-latency').textContent = (totalLat/1000).toFixed(2)+'s';
+      document.getElementById('demo-dataflows').textContent = dataFlows;
+      if (i === data.trace.length-1) {
+        document.getElementById('skill-output').innerHTML = `<div style="padding:10px;background:var(--green-light);border-radius:6px;border-left:3px solid var(--green);"><span style="color:var(--green);font-weight:600;">Answer:</span> <span style="font-family:var(--font-mono);font-size:0.76rem;">${JSON.stringify(data.trace[i].output).replace(/"/g,'')}</span></div>`;
+        document.getElementById('demo-skills').textContent = data.skills.length;
+        document.getElementById('react-trace').innerHTML = `
+          <span style="color:var(--red);font-weight:600;">Without FinSkillsTracer:</span><br>
+          <span style="color:var(--text-secondary);font-size:0.72rem;">~14 scattered calls → redundant exploration, no parameter reuse</span><br>
+          <span style="color:var(--primary);margin-top:4px;display:block;font-weight:600;">→ SkillAwareAgent: 92.1% faster, 57.1% fewer calls</span>
+        `;
+      }
+    }, [300, 1000, 1800][i]);
+  });
+}
+
+setTimeout(() => runDemo('apple'), 400);
+</script>
+</body>
+</html>
