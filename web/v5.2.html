@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinSkillsTracer v5.2 — Semantic Router + MCP Step-by-Step Execution</title>
+<style>
+/* ============================================================
+   FinSkillsTracer v5.2 — Semantic Router + MCP Execution
+   ============================================================ */
+:root {
+  --primary: #005096; --primary-dark: #003a6f; --primary-light: #e8f0f8;
+  --accent: #1EB9E1; --accent-light: #e6f7fc;
+  --bg: #F4F7F8; --bg-white: #FFFFFF;
+  --card-shadow: 0 2px 16px rgba(0,80,150,0.07), 0 0 0 1px rgba(0,80,150,0.04);
+  --card-shadow-hover: 0 6px 32px rgba(0,80,150,0.11), 0 0 0 1px rgba(0,80,150,0.07);
+  --text: #1a2a3a; --text-secondary: #5a6d80; --text-tertiary: #8a9bb0;
+  --border: #E2E8EE; --border-light: #EEF2F5;
+  --gold: #C8963E; --gold-light: #fdf6ea;
+  --red: #C41230; --red-light: #fef0f2;
+  --green: #1a8c5e; --green-light: #edf8f3;
+  --radius: 10px; --radius-sm: 6px;
+  --font-sans: 'Inter','Segoe UI','PingFang SC','Microsoft YaHei',system-ui,sans-serif;
+  --font-mono: 'JetBrains Mono','SF Mono','Cascadia Code','Consolas',monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; font-size:16px; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: var(--font-sans); line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Navigation */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index: 100;
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 36px; height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+nav .logo { font-weight: 700; font-size: 1rem; color: var(--primary); letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; }
+nav .logo .ver { color: var(--text-tertiary); font-weight: 400; font-size: 0.72rem; }
+nav .nav-links { display: flex; gap: 22px; list-style: none; align-items: center; }
+nav .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.8rem; font-weight: 500; transition: color .2s; }
+nav .nav-links a:hover { color: var(--primary); }
+nav .lang-btn {
+  background: var(--primary-light); border: 1px solid var(--border);
+  color: var(--primary); padding: 5px 14px; border-radius: 16px;
+  cursor: pointer; font-size: 0.76rem; font-weight: 600; transition: all .2s;
+}
+nav .lang-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+/* Sections */
+section { position: relative; z-index: 1; padding: 60px 36px; max-width: 1280px; margin: 0 auto; }
+.section-tag {
+  display: inline-block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--primary); margin-bottom: 8px;
+  padding: 4px 12px; background: var(--primary-light); border-radius: 4px;
+}
+.section-title { font-size: 2rem; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -0.5px; }
+.section-sub { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 32px; max-width: 700px; }
+
+/* Cards */
+.card {
+  background: var(--bg-white); border-radius: var(--radius);
+  box-shadow: var(--card-shadow); padding: 24px;
+  transition: box-shadow .25s, transform .25s;
+}
+.card:hover { box-shadow: var(--card-shadow-hover); }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 24px; border-radius: 6px; font-size: 0.82rem; font-weight: 600;
+  cursor: pointer; border: none; transition: all .2s; text-decoration: none;
+  font-family: var(--font-sans);
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,80,150,0.3); }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-accent:hover { background: #189fc4; }
+.btn-sm { padding: 5px 12px; font-size: 0.72rem; border-radius: 4px; }
+
+/* Query Input */
+.query-bar {
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  background: var(--bg-white); border-radius: 12px; padding: 8px;
+  box-shadow: var(--card-shadow); margin-bottom: 20px;
+}
+.query-bar input {
+  flex: 1; min-width: 280px; border: none; padding: 12px 16px;
+  font-size: 0.9rem; font-family: var(--font-sans); outline: none;
+  background: transparent; color: var(--text);
+}
+.query-bar input::placeholder { color: var(--text-tertiary); }
+.query-bar select {
+  border: 1.5px solid var(--border); border-radius: 6px;
+  padding: 8px 12px; font-size: 0.78rem; font-family: var(--font-sans);
+  background: #fff; color: var(--text); cursor: pointer; outline: none;
+}
+.query-bar select:focus { border-color: var(--primary); }
+.preset-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+.preset-chip {
+  padding: 6px 16px; border-radius: 20px; font-size: 0.74rem;
+  cursor: pointer; border: 1px solid var(--border); background: #fff;
+  color: var(--text-secondary); transition: all .2s; font-weight: 500; white-space: nowrap;
+}
+.preset-chip:hover, .preset-chip.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+
+/* Router Panel */
+.router-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px; margin-bottom: 24px;
+}
+.router-card {
+  background: #fff; border: 2px solid var(--border); border-radius: 8px;
+  padding: 14px; cursor: pointer; transition: all .25s; position: relative;
+}
+.router-card:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(30,185,225,0.12); transform: translateY(-2px); }
+.router-card.best {
+  border-color: var(--primary); background: var(--primary-light);
+  box-shadow: 0 0 0 4px rgba(0,80,150,0.10);
+}
+.router-card.best::before {
+  content: '★ BEST'; position: absolute; top: -10px; right: 10px;
+  background: var(--primary); color: #fff; font-size: 0.6rem; font-weight: 700;
+  padding: 2px 10px; border-radius: 10px; letter-spacing: 1px;
+}
+.router-card .semantic-badge {
+  display: inline-block; font-size: 0.58rem; font-weight: 700; padding: 2px 8px;
+  border-radius: 3px; letter-spacing: 0.5px; background: var(--accent-light); color: var(--accent);
+}
+.router-card .tier-badge {
+  display: inline-block; font-size: 0.6rem; font-weight: 700; padding: 2px 8px;
+  border-radius: 3px; letter-spacing: 0.5px;
+}
+.tier-a { background: var(--green-light); color: var(--green); }
+.tier-b { background: var(--gold-light); color: var(--gold); }
+.tier-c { background: var(--bg); color: var(--text-tertiary); }
+
+/* MCP Execution Panel */
+.mcp-exec-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;
+}
+@media (max-width: 900px) { .mcp-exec-grid { grid-template-columns: 1fr; } }
+
+/* MCP Step Cards */
+.mcp-phase {
+  padding: 10px 16px; border-radius: 6px; margin-bottom: 8px;
+  font-size: 0.74rem; font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+}
+.mcp-phase.extract { background: var(--primary-light); color: var(--primary); }
+.mcp-phase.tool-running { background: var(--gold-light); color: var(--gold); }
+.mcp-phase.tool-done { background: var(--green-light); color: var(--green); }
+.mcp-phase.tool-error { background: var(--red-light); color: var(--red); }
+.mcp-phase.answer { background: var(--accent-light); color: var(--primary); }
+
+.mcp-step {
+  border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px;
+  overflow: hidden; transition: all .25s;
+}
+.mcp-step .step-header {
+  padding: 10px 16px; font-weight: 600; font-size: 0.76rem;
+  display: flex; justify-content: space-between; align-items: center;
+  cursor: pointer;
+}
+.mcp-step .step-body { padding: 12px 16px; font-size: 0.7rem; font-family: var(--font-mono); background: #fafbfc; border-top: 1px solid var(--border-light); display: none; }
+.mcp-step.expanded .step-body { display: block; }
+.mcp-step .step-header:hover { opacity: 0.85; }
+.step-financial { background: var(--primary-light); }
+.step-web { background: var(--accent-light); }
+.step-file { background: #f5f0ff; }
+
+.step-financial .step-header { color: var(--primary); }
+.step-web .step-header { color: var(--accent); }
+
+.json-block {
+  background: #0d1b2a; color: #00ff88; padding: 10px 14px; border-radius: 4px;
+  font-size: 0.66rem; white-space: pre-wrap; word-break: break-all;
+  max-height: 180px; overflow-y: auto; margin: 6px 0;
+}
+
+/* Context Chain */
+.context-chain {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.context-link {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+  border-radius: 6px; font-size: 0.7rem; font-family: var(--font-mono);
+  background: #fff; border: 1px solid var(--border);
+}
+.context-link .link-arrow { color: var(--accent); font-weight: 700; }
+.context-link .link-key { color: var(--primary); font-weight: 600; }
+.context-link .link-val { color: var(--text-secondary); font-size: 0.66rem; }
+
+/* Tool input/output sections within step body */
+.io-section { margin-bottom: 10px; }
+.io-section .io-label { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-tertiary); margin-bottom: 4px; }
+
+/* Progress bar */
+.progress-bar {
+  height: 4px; background: var(--border); border-radius: 2px; margin: 8px 0; overflow: hidden;
+}
+.progress-bar .fill {
+  height: 100%; background: var(--accent); border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* Metrics side panel */
+.metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.metric-box {
+  text-align: center; padding: 12px 8px; border-radius: 6px;
+  background: #fff; border: 1px solid var(--border);
+}
+.metric-box .val { font-size: 1.1rem; font-weight: 700; font-family: var(--font-mono); }
+.metric-box .lbl { font-size: 0.62rem; color: var(--text-tertiary); margin-top: 2px; }
+
+/* Status indicators */
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+.pulse { animation: pulse 1.5s ease-in-out infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 1s linear infinite; }
+
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+.status-dot.online { background: var(--green); }
+.status-dot.offline { background: var(--red); }
+.status-dot.checking { background: var(--gold); animation: pulse 1s infinite; }
+
+/* Answer box */
+.answer-box {
+  background: linear-gradient(135deg, var(--primary-light), var(--accent-light));
+  border: 2px solid var(--primary); border-radius: 10px; padding: 20px;
+  margin-top: 16px;
+}
+.answer-box .answer-text { font-size: 1rem; font-weight: 600; color: var(--text); }
+.answer-box .answer-meta { font-size: 0.68rem; color: var(--text-tertiary); margin-top: 6px; }
+
+/* Reasoning callout */
+.reasoning-callout {
+  background: var(--accent-light); border-left: 3px solid var(--accent);
+  padding: 8px 14px; border-radius: 0 6px 6px 0; margin-bottom: 12px;
+  font-size: 0.72rem; color: var(--text-secondary); font-style: italic;
+}
+
+/* Footer */
+footer { text-align: center; padding: 32px; color: var(--text-tertiary); font-size: 0.72rem; border-top: 1px solid var(--border); }
+footer a { color: var(--primary); text-decoration: none; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #c4cdd5; border-radius: 3px; }
+.json-block::-webkit-scrollbar-track { background: #0d1b2a; }
+.json-block::-webkit-scrollbar-thumb { background: #1a3a5c; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAVIGATION
+     ============================================================ -->
+<nav>
+  <div class="logo">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#005096"/><path d="M7 17V7l5 5-5 5zM12 12l5-5v10l-5-5z" fill="#fff"/></svg>
+    FinSkillsTracer <span class="ver">v5.2</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#demo" data-i18n="nav_demo">Live Demo</a></li>
+    <li><a href="#mcp-exec" data-i18n="nav_mcp">MCP Execution</a></li>
+    <li><a href="#about" data-i18n="nav_about">About</a></li>
+    <li><a href="https://github.com/betalau/FinSkillsTracer" target="_blank">GitHub</a></li>
+    <li><button class="lang-btn" onclick="toggleLang()" id="lang-btn">中文</button></li>
+  </ul>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section style="padding-top:100px;">
+  <span class="section-tag">FinSkillsTracer v5.2</span>
+  <h1 class="section-title" data-i18n="hero_title">Semantic Skill Router<br>&amp; MCP Step-by-Step Execution</h1>
+  <p class="section-sub" data-i18n="hero_sub">
+    LLM-powered semantic skill routing with real MCP-style tool execution.
+    Enter a financial query to see the LLM rank skills by relevance, then watch
+    each MCP tool execute step-by-step with live parameter chaining.
+  </p>
+</section>
+
+<!-- ============================================================
+     SECTION 1: SEMANTIC SKILL ROUTER
+     ============================================================ -->
+<section id="demo">
+  <span class="section-tag" data-i18n="demo_tag">Semantic Router</span>
+  <h1 class="section-title" data-i18n="demo_title">LLM-Powered Skill Ranking + MCP Execution</h1>
+  <p class="section-sub" data-i18n="demo_sub">
+    Two-phase routing: keyword pre-filter (top 40) → LLM semantic re-ranking.
+    The top-ranked skill is then executed via MCP-style tool calls with live parameter chaining.
+  </p>
+
+  <!-- Query Input -->
+  <div class="query-bar">
+    <input type="text" id="demo-query" data-i18n-placeholder="demo_placeholder"
+           placeholder="e.g., What was NVIDIA's revenue growth rate and EPS for FY2024?"
+           onkeydown="if(event.key==='Enter')runV52Demo()">
+    <select id="provider-select" onchange="onProviderChange()" data-i18n-title="provider_title" title="Select LLM provider">
+      <option value="">LLM Provider</option>
+    </select>
+    <button class="btn btn-primary" onclick="runV52Demo()" data-i18n="demo_run">▶ Run MCP Analysis</button>
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.74rem;color:var(--text-secondary);white-space:nowrap;">
+      <input type="checkbox" id="live-api-toggle" onchange="toggleLiveMode()">
+      <span data-i18n="demo_live">Live API</span>
+      <span id="api-status" style="font-size:0.68rem;"></span>
+    </label>
+  </div>
+
+  <!-- Preset Scenarios -->
+  <div class="preset-chips">
+    <span data-i18n="demo_presets" style="font-size:0.72rem;color:var(--text-tertiary);padding:6px 0;margin-right:4px;">Presets:</span>
+    <button class="preset-chip active" onclick="selectPreset('nvda', this)" data-i18n="preset_nvda">NVIDIA FY2024</button>
+    <button class="preset-chip" onclick="selectPreset('aapl', this)" data-i18n="preset_aapl">Apple FY2024</button>
+    <button class="preset-chip" onclick="selectPreset('tsla', this)" data-i18n="preset_tsla">Tesla Q3/Q4 EPS</button>
+    <button class="preset-chip" onclick="selectPreset('compare', this)" data-i18n="preset_compare">FAANG Compare</button>
+    <button class="preset-chip" onclick="selectPreset('custom', this)" data-i18n="preset_custom">Custom Query</button>
+  </div>
+
+  <!-- Semantic Router Panel -->
+  <div class="card" style="margin-bottom:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h3 style="font-size:0.9rem;color:var(--text);">
+        🎯 Semantic Skill Router — LLM-Ranked Candidates
+      </h3>
+      <span id="router-summary" style="font-size:0.72rem;color:var(--text-tertiary);"></span>
+    </div>
+    <div id="router-reasoning" class="reasoning-callout" style="display:none;"></div>
+    <div class="router-grid" id="router-grid">
+      <div style="grid-column:1/-1;text-align:center;color:var(--text-tertiary);padding:32px;font-size:0.8rem;" data-i18n="router_placeholder">
+        Enter a query above to see the LLM semantically rank 10+ candidate skills
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 2: MCP STEP-BY-STEP EXECUTION
+     ============================================================ -->
+<section id="mcp-exec">
+  <span class="section-tag" data-i18n="mcp_tag">MCP Execution</span>
+  <h1 class="section-title" data-i18n="mcp_title">Step-by-Step MCP Tool Execution</h1>
+  <p class="section-sub" data-i18n="mcp_sub">
+    Each tool in the selected skill sequence is executed individually with structured input/output,
+    parameter chaining across steps, and real-time progress streaming via SSE.
+  </p>
+
+  <div class="mcp-exec-grid">
+    <!-- Left: Execution Steps -->
+    <div>
+      <h3 style="font-size:0.85rem;color:var(--text);margin-bottom:12px;">🔧 MCP Tool Pipeline</h3>
+      <div id="mcp-pipeline" style="min-height:200px;">
+        <div style="text-align:center;color:var(--text-tertiary);padding:48px 16px;font-size:0.78rem;">
+          Run a query above to see step-by-step MCP execution
+        </div>
+      </div>
+      <!-- Progress -->
+      <div class="progress-bar" id="mcp-progress-bar" style="display:none;">
+        <div class="fill" id="mcp-progress-fill" style="width:0%;"></div>
+      </div>
+      <div id="mcp-progress-text" style="text-align:center;font-size:0.68rem;color:var(--text-tertiary);margin-top:4px;"></div>
+    </div>
+
+    <!-- Right: Context Chain + Metrics -->
+    <div>
+      <h3 style="font-size:0.85rem;color:var(--text);margin-bottom:12px;">🔗 Parameter Chaining (Context Accumulation)</h3>
+      <div class="context-chain" id="context-chain">
+        <div style="text-align:center;color:var(--text-tertiary);padding:48px 16px;font-size:0.78rem;">
+          Parameter flow between tools will appear here
+        </div>
+      </div>
+
+      <!-- Real-time Metrics -->
+      <h3 style="font-size:0.85rem;color:var(--text);margin:16px 0 10px;">📊 Execution Metrics</h3>
+      <div class="metrics-grid" id="exec-metrics">
+        <div class="metric-box"><div class="val" id="met-steps">0</div><div class="lbl">Tool Steps</div></div>
+        <div class="metric-box"><div class="val" id="met-duration">0ms</div><div class="lbl">Total Duration</div></div>
+        <div class="metric-box"><div class="val" id="met-errors">0</div><div class="lbl">Errors</div></div>
+        <div class="metric-box"><div class="val" id="met-confidence">—</div><div class="lbl">Confidence</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Final Answer -->
+  <div class="answer-box" id="answer-box" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:start;">
+      <div>
+        <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--primary);">Extracted Answer</div>
+        <div class="answer-text" id="answer-text">—</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:0.62rem;color:var(--text-tertiary);">Confidence</div>
+        <div style="font-size:1.2rem;font-weight:700;color:var(--green);" id="answer-confidence">—</div>
+      </div>
+    </div>
+    <div class="answer-meta" id="answer-meta"></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 3: ABOUT
+     ============================================================ -->
+<section id="about">
+  <span class="section-tag" data-i18n="about_tag">About</span>
+  <h1 class="section-title" data-i18n="about_title">FinSkillsTracer v5.2</h1>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+    <div class="card">
+      <h3 style="color:var(--primary);margin-bottom:8px;">v5.2: Semantic Router + MCP</h3>
+      <p style="font-size:0.82rem;color:var(--text-secondary);">
+        v5.2 replaces the support-biased keyword router with a two-phase LLM semantic router:
+        keyword pre-filter (top 40) → LLM re-ranking. Skills are then executed via simulated
+        MCP (Model Context Protocol) calls — each tool runs independently with structured
+        input/output schemas, and results from earlier steps feed into later steps via
+        parameter chaining.<br><br>
+        <strong>Key improvements over v5.1:</strong><br>
+        • LLM judges semantic relevance instead of support-count bias<br>
+        • Step-by-step MCP tool execution with live SSE streaming<br>
+        • Entity extraction + parameter chaining across tool calls<br>
+        • Realistic tool output simulation matching MCP schemas
+      </p>
+    </div>
+    <div class="card">
+      <h3 style="color:var(--primary);margin-bottom:8px;">Data & Resources</h3>
+      <p style="font-size:0.82rem;color:var(--text-secondary);">
+        <strong>Dataset:</strong> <a href="https://huggingface.co/datasets/daloopa/finretrieval">daloopa/finretrieval</a>
+        — 7,000 traces, 500 queries, 14 LLM configs, 17 tool types.<br>
+        <strong>Code:</strong> <a href="https://github.com/betalau/FinSkillsTracer">github.com/betalau/FinSkillsTracer</a><br>
+        <strong>API:</strong> Multi-provider (EFundGPT, DeepSeek, OpenAI, Custom)<br>
+        <strong>Server:</strong> Flask on port 5002 with SSE streaming
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  FinSkillsTracer v5.2 · Semantic Router + MCP Step-by-Step Execution ·
+  <a href="https://github.com/betalau/FinSkillsTracer">GitHub</a> ·
+  <a href="https://huggingface.co/datasets/daloopa/finretrieval">Dataset</a>
+</footer>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+// ================================================================
+// i18n System (English / Chinese)
+// ================================================================
+const I18N = {
+  en: {
+    nav_demo: "Live Demo", nav_mcp: "MCP Execution", nav_about: "About",
+    hero_title: "Semantic Skill Router<br>&amp; MCP Step-by-Step Execution",
+    hero_sub: "LLM-powered semantic skill routing with real MCP-style tool execution. Enter a financial query to see the LLM rank skills by relevance, then watch each MCP tool execute step-by-step with live parameter chaining.",
+    demo_tag: "Semantic Router", demo_title: "LLM-Powered Skill Ranking + MCP Execution",
+    demo_sub: "Two-phase routing: keyword pre-filter (top 40) → LLM semantic re-ranking. The top-ranked skill is then executed via MCP-style tool calls with live parameter chaining.",
+    demo_placeholder: "e.g., What was NVIDIA's revenue growth rate and EPS for FY2024?",
+    demo_run: "▶ Run MCP Analysis", demo_live: "Live API", demo_presets: "Presets:",
+    provider_title: "Select LLM Provider", provider_fetching: "Fetching...",
+    preset_nvda: "NVIDIA FY2024", preset_aapl: "Apple FY2024", preset_tsla: "Tesla Q3/Q4 EPS",
+    preset_compare: "FAANG Compare", preset_custom: "Custom Query",
+    router_placeholder: "Enter a query above to see the LLM semantically rank 10+ candidate skills",
+    mcp_tag: "MCP Execution", mcp_title: "Step-by-Step MCP Tool Execution",
+    mcp_sub: "Each tool in the selected skill sequence is executed individually with structured input/output, parameter chaining across steps, and real-time progress streaming via SSE.",
+    about_tag: "About", about_title: "FinSkillsTracer v5.2",
+  },
+  zh: {
+    nav_demo: "实时演示", nav_mcp: "MCP执行", nav_about: "关于",
+    hero_title: "语义技能路由<br>&amp; MCP逐步执行",
+    hero_sub: "基于LLM的语义技能路由，结合真实MCP风格工具执行。输入金融查询，查看LLM按相关性对技能进行排序，然后观察每个MCP工具逐步执行及实时参数传递。",
+    demo_tag: "语义路由器", demo_title: "LLM驱动的技能排序 + MCP执行",
+    demo_sub: "两阶段路由：关键词预筛选（前40）→ LLM语义重排序。排名第一的技能随后通过MCP风格工具调用执行，并实时展示参数传递。",
+    demo_placeholder: "例如：NVIDIA 2024财年的营收增长率和每股收益是多少？",
+    demo_run: "▶ 开始MCP分析", demo_live: "实时API", demo_presets: "预设:",
+    provider_title: "选择LLM提供商", provider_fetching: "获取中...",
+    preset_nvda: "NVIDIA FY2024", preset_aapl: "Apple FY2024", preset_tsla: "Tesla Q3/Q4 EPS",
+    preset_compare: "FAANG 对比", preset_custom: "自定义查询",
+    router_placeholder: "输入查询以查看LLM语义排序10+候选技能",
+    mcp_tag: "MCP执行", mcp_title: "逐步MCP工具执行",
+    mcp_sub: "所选技能序列中的每个工具独立执行，包含结构化输入/输出、跨步骤参数传递，并通过SSE实时流式传输进度。",
+    about_tag: "关于", about_title: "FinSkillsTracer v5.2",
+  }
+};
+
+let currentLang = 'en';
+function t(key) { return (I18N[currentLang] || I18N['en'])[key] || key; }
+
+function toggleLang() {
+  currentLang = currentLang === 'en' ? 'zh' : 'en';
+  document.getElementById('lang-btn').textContent = currentLang === 'en' ? '中文' : 'English';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (key && I18N[currentLang] && I18N[currentLang][key]) {
+      if (key === 'hero_title' || key === 'hero_sub' || key === 'about_data_text') {
+        el.innerHTML = I18N[currentLang][key];
+      } else {
+        el.textContent = I18N[currentLang][key];
+      }
+    }
+  });
+  const input = document.getElementById('demo-query');
+  if (input && I18N[currentLang] && I18N[currentLang]['demo_placeholder']) {
+    input.placeholder = I18N[currentLang]['demo_placeholder'];
+  }
+}
+
+// ================================================================
+// Presets
+// ================================================================
+const PRESETS = {
+  nvda: "What was NVIDIA's revenue growth rate and earnings per share for fiscal year 2024?",
+  aapl: "What was Apple Inc.'s revenue and net income for fiscal year 2024?",
+  tsla: "What was Tesla's earnings per share for Q3 and Q4 of fiscal year 2024?",
+  compare: "Compare revenue growth rates of Apple, Microsoft, Google, Amazon and Meta for FY2023-FY2024",
+  custom: "",
+};
+
+function selectPreset(key, btn) {
+  document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  if (key !== 'custom') {
+    document.getElementById('demo-query').value = PRESETS[key];
+  } else {
+    document.getElementById('demo-query').value = '';
+    document.getElementById('demo-query').focus();
+  }
+}
+
+// ================================================================
+// Live API Mode
+// ================================================================
+let useLiveApi = false;
+const API_BASE = 'http://localhost:5002';
+
+function _esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function toggleLiveMode() {
+  useLiveApi = document.getElementById('live-api-toggle').checked;
+  const status = document.getElementById('api-status');
+  if (useLiveApi) {
+    status.innerHTML = '<span class="status-dot checking"></span> Checking...';
+    try {
+      const resp = await fetch(API_BASE + '/api/health');
+      const data = await resp.json();
+      if (data.status === 'ok') {
+        status.innerHTML = '<span class="status-dot online"></span> Live (' + (data.llm_provider || '?') + ')';
+        fetchProviders();
+      } else {
+        status.innerHTML = '<span class="status-dot offline"></span> Error';
+      }
+    } catch(e) {
+      status.innerHTML = '<span class="status-dot offline"></span> Offline';
+      useLiveApi = false;
+      document.getElementById('live-api-toggle').checked = false;
+    }
+  } else {
+    status.textContent = '';
+  }
+}
+
+// ================================================================
+// Provider Selector
+// ================================================================
+let currentProvider = 'deepseek';
+let availableProviders = [];
+
+async function fetchProviders() {
+  const sel = document.getElementById('provider-select');
+  if (!sel) return;
+  try {
+    const resp = await fetch(API_BASE + '/api/llm/providers');
+    const data = await resp.json();
+    availableProviders = data.available || [];
+    currentProvider = data.current_provider || 'deepseek';
+    sel.innerHTML = '';
+    availableProviders.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = p.toUpperCase();
+      if (p === currentProvider) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  } catch(e) {
+    sel.innerHTML = '<option value="">' + t('provider_fetching') + '</option>';
+  }
+}
+
+async function onProviderChange() {
+  const sel = document.getElementById('provider-select');
+  if (!sel || !sel.value) return;
+  try {
+    const resp = await fetch(API_BASE + '/api/llm/switch', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({provider: sel.value}),
+    });
+    const data = await resp.json();
+    if (data.provider) currentProvider = data.provider;
+  } catch(e) { console.error('Provider switch failed:', e); }
+}
+
+// ================================================================
+// V5.2 Main Demo
+// ================================================================
+let _demoRunning = false;
+
+async function runV52Demo() {
+  const query = document.getElementById('demo-query').value.trim();
+  if (!query) {
+    document.getElementById('demo-query').placeholder = t('demo_placeholder');
+    document.getElementById('demo-query').focus();
+    return;
+  }
+  if (_demoRunning) return;
+  _demoRunning = true;
+  document.querySelectorAll('.btn-primary').forEach(b => b.disabled = true);
+
+  resetV52UI();
+
+  try {
+    if (useLiveApi) {
+      await runLiveV52Demo(query);
+    } else {
+      await runOfflineV52Demo(query);
+    }
+  } finally {
+    _demoRunning = false;
+    document.querySelectorAll('.btn-primary').forEach(b => b.disabled = false);
+  }
+}
+
+function resetV52UI() {
+  document.getElementById('router-grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-tertiary);padding:32px;font-size:0.8rem;">Routing...</div>';
+  document.getElementById('router-summary').textContent = '';
+  document.getElementById('router-reasoning').style.display = 'none';
+  document.getElementById('mcp-pipeline').innerHTML = '<div style="text-align:center;color:var(--text-tertiary);padding:32px;font-size:0.78rem;">Executing...</div>';
+  document.getElementById('context-chain').innerHTML = '<div style="text-align:center;color:var(--text-tertiary);padding:32px;font-size:0.78rem;">Waiting for execution...</div>';
+  document.getElementById('answer-box').style.display = 'none';
+  document.getElementById('mcp-progress-bar').style.display = 'none';
+  document.getElementById('mcp-progress-text').textContent = '';
+  ['met-steps','met-duration','met-errors','met-confidence'].forEach(id => document.getElementById(id).textContent = '—');
+}
+
+// ================================================================
+// Live API Demo — SSE-based MCP Execution
+// ================================================================
+async function runLiveV52Demo(query) {
+  // Step 1: Semantic routing
+  const routeResp = await fetch(API_BASE + '/api/skills/route', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({query, limit: 12}),
+  });
+  const routeData = await routeResp.json();
+  renderRouterPanelV52(routeData);
+
+  const bestRoute = routeData.best_route;
+  const toolSequence = bestRoute ? bestRoute.tool_sequence : ['WebSearch'];
+
+  // Step 2: SSE MCP Execution
+  const url = API_BASE + '/api/trace/execute?query=' + encodeURIComponent(query);
+  if (bestRoute && bestRoute.skill_id) {
+    // The server routes internally, but we pass for context
+  }
+
+  // Set up MCP pipeline header
+  document.getElementById('mcp-pipeline').innerHTML = '';
+  document.getElementById('mcp-progress-bar').style.display = 'block';
+  document.getElementById('mcp-progress-text').textContent = 'Connecting to MCP executor...';
+  document.getElementById('context-chain').innerHTML = '';
+
+  let totalSteps = toolSequence.length;
+  let currentStep = 0;
+  let entities = null;
+
+  try {
+    const response = await fetch(url);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = JSON.parse(line.slice(6));
+          handleSSEEvent(data, totalSteps);
+          if (data.type === 'meta') {
+            totalSteps = data.tool_count || totalSteps;
+          } else if (data.type === 'entities') {
+            entities = data.entities;
+          } else if (data.type === 'tool_done' && !data.is_error) {
+            currentStep = data.index + 1;
+            updateProgress(currentStep, totalSteps);
+          } else if (data.type === 'answer') {
+            showAnswer(data);
+            updateProgress(totalSteps, totalSteps);
+          }
+        }
+      }
+    }
+  } catch(e) {
+    document.getElementById('mcp-pipeline').innerHTML +=
+      '<div class="mcp-phase tool-error">✗ SSE Error: ' + _esc(e.message) + '</div>';
+  }
+}
+
+function handleSSEEvent(event, totalSteps) {
+  const pipeline = document.getElementById('mcp-pipeline');
+  const ctxChain = document.getElementById('context-chain');
+
+  switch (event.type) {
+    case 'meta':
+      if (pipeline.querySelector('.mcp-phase')) return; // already initialized
+      pipeline.innerHTML = '';
+      document.getElementById('mcp-progress-bar').style.display = 'block';
+      document.getElementById('mcp-progress-text').textContent = 'Tool sequence: ' + (event.tool_sequence || []).join(' → ');
+      break;
+
+    case 'phase':
+      pipeline.insertAdjacentHTML('beforeend',
+        '<div class="mcp-phase ' + _esc(event.phase) + ' pulse">' +
+        '⟳ ' + _esc(event.message) + '</div>');
+      pipeline.scrollTop = pipeline.scrollHeight;
+      break;
+
+    case 'entities':
+      // Remove the "extracting" pulse and show entities
+      const phases = pipeline.querySelectorAll('.mcp-phase.extract.pulse');
+      phases.forEach(p => p.classList.remove('pulse'));
+      pipeline.insertAdjacentHTML('beforeend',
+        '<div class="mcp-phase extract" style="font-weight:400;">' +
+        '✓ Entities: ' + _esc(JSON.stringify(event.entities)) + '</div>');
+      break;
+
+    case 'tool_start':
+      // Remove running pulse from previous step
+      pipeline.querySelectorAll('.mcp-phase.tool-running.pulse').forEach(p => p.classList.remove('pulse'));
+      pipeline.insertAdjacentHTML('beforeend',
+        '<div class="mcp-step ' + (event.category === 'financial_direct' || event.category === 'financial_mcp' ? 'step-financial' : event.category === 'web_search' ? 'step-web' : 'step-file') + ' expanded" id="step-' + event.index + '">' +
+        '<div class="step-header" onclick="toggleStep(\'step-' + event.index + '\')">' +
+        '<span>🔹 Step ' + (event.index + 1) + ': ' + _esc(event.tool) + '</span>' +
+        '<span style="font-size:0.62rem;color:var(--text-tertiary);">' + _esc(event.mcp_endpoint || event.category || '') + ' <span class="pulse">⟳</span></span>' +
+        '</div>' +
+        '<div class="step-body">' +
+        '<div class="io-section"><div class="io-label">Input</div><div class="json-block">' + _esc(JSON.stringify(event.input_schema || {}, null, 2)) + '</div></div>' +
+        '<div class="io-section"><div class="io-label">Output</div><div class="json-block" id="step-output-' + event.index + '">Waiting...</div></div>' +
+        '</div></div>');
+      pipeline.scrollTop = pipeline.scrollHeight;
+      break;
+
+    case 'tool_done':
+      // Update the step with output
+      const stepEl = document.getElementById('step-' + event.index);
+      if (stepEl) {
+        // Remove spinner
+        const hdr = stepEl.querySelector('.step-header span:last-child');
+        if (hdr) hdr.innerHTML = hdr.innerHTML.replace(' <span class="pulse">⟳</span>', ' ✓');
+
+        const outputEl = document.getElementById('step-output-' + event.index);
+        if (outputEl) {
+          outputEl.textContent = JSON.stringify(event.output, null, 2);
+          if (event.is_error) {
+            outputEl.style.color = '#ff4444';
+            stepEl.querySelector('.step-header').style.color = 'var(--red)';
+          }
+        }
+        // Add duration to header
+        const durSpan = document.createElement('span');
+        durSpan.style.cssText = 'font-size:0.62rem;color:var(--text-tertiary);margin-left:8px;';
+        durSpan.textContent = event.duration_ms + 'ms';
+        stepEl.querySelector('.step-header').appendChild(durSpan);
+      }
+
+      // Remove the "extract_answer" pulse if present
+      pipeline.querySelectorAll('.mcp-phase.extract_answer.pulse').forEach(p => p.classList.remove('pulse'));
+
+      // Add to context chain
+      if (!event.is_error && event.output) {
+        const keys = Object.keys(event.output).filter(k => k !== 'error' && k !== 'message' && k !== 'status' && k !== 'currency' && k !== 'fiscal_year_end').slice(0, 3);
+        ctxChain.insertAdjacentHTML('beforeend',
+          '<div class="context-link">' +
+          '<span style="font-weight:600;min-width:90px;font-size:0.66rem;">' + _esc(event.tool) + '</span>' +
+          '<span class="link-arrow">→</span>' +
+          '<span style="font-size:0.64rem;color:var(--text-secondary);">' +
+          keys.map(k => '<span class="link-key">' + _esc(k) + '</span>: <span class="link-val">' + _esc(String(event.output[k]).slice(0, 40)) + '</span>').join(', ') +
+          '</span></div>');
+      }
+
+      // Update metrics
+      document.getElementById('met-steps').textContent = (event.index + 1);
+      break;
+
+    case 'answer':
+      pipeline.querySelectorAll('.mcp-phase.extract_answer.pulse').forEach(p => p.classList.remove('pulse'));
+      showAnswer(event);
+      break;
+
+    case 'done':
+      pipeline.querySelectorAll('.pulse').forEach(p => p.classList.remove('pulse'));
+      document.getElementById('mcp-progress-text').textContent = 'Execution complete';
+      break;
+  }
+}
+
+function updateProgress(current, total) {
+  const pct = total > 0 ? Math.round(current / total * 100) : 0;
+  document.getElementById('mcp-progress-fill').style.width = pct + '%';
+  document.getElementById('mcp-progress-text').textContent = 'Step ' + current + ' / ' + total;
+}
+
+function showAnswer(event) {
+  document.getElementById('answer-box').style.display = 'block';
+  document.getElementById('answer-text').textContent = event.answer || 'N/A';
+  document.getElementById('answer-confidence').textContent = ((event.confidence || 0) * 100).toFixed(0) + '%';
+  document.getElementById('answer-meta').textContent =
+    'Total tools executed: ' + (event.total_tools || 0) + ' · Context entries: ' + (event.total_context || 0);
+  document.getElementById('met-confidence').textContent = ((event.confidence || 0) * 100).toFixed(0) + '%';
+  document.getElementById('met-duration').textContent = '—';
+  document.getElementById('met-errors').textContent = '0';
+}
+
+function toggleStep(stepId) {
+  const el = document.getElementById(stepId);
+  if (el) el.classList.toggle('expanded');
+}
+
+// ================================================================
+// Offline Demo (simulated MCP execution)
+// ================================================================
+async function runOfflineV52Demo(query) {
+  const qLower = query.toLowerCase();
+  const candidates = generateOfflineCandidatesV52(query);
+  renderRouterPanelV52({candidates, total_candidates: candidates.length, method: 'semantic_llm', route_summary: {
+    tier_a_count: candidates.filter(c=>c.tier==='A').length,
+    tier_b_count: candidates.filter(c=>c.tier==='B').length,
+    tier_c_count: candidates.filter(c=>c.tier==='C').length,
+    semantic_ranked: true,
+  }});
+
+  const best = candidates[0];
+  const toolSequence = best.tool_sequence || ['WebSearch'];
+  const totalSteps = toolSequence.length;
+
+  // Set up MCP pipeline
+  document.getElementById('mcp-pipeline').innerHTML = '';
+  document.getElementById('mcp-progress-bar').style.display = 'block';
+  document.getElementById('mcp-progress-text').textContent = 'Tool sequence: ' + toolSequence.join(' → ');
+  document.getElementById('context-chain').innerHTML = '';
+  document.getElementById('mcp-progress-fill').style.width = '0%';
+
+  // Phase: Entity extraction
+  document.getElementById('mcp-pipeline').innerHTML +=
+    '<div class="mcp-phase extract pulse">⟳ Extracting entities from query...</div>';
+  await sleep(400);
+
+  const entities = extractEntitiesOffline(query);
+  document.querySelectorAll('#mcp-pipeline .mcp-phase.extract.pulse').forEach(p => p.classList.remove('pulse'));
+  document.getElementById('mcp-pipeline').innerHTML +=
+    '<div class="mcp-phase extract" style="font-weight:400;">✓ Entities: ' + _esc(JSON.stringify(entities)) + '</div>';
+
+  // Simulated context
+  let context = [];
+  let cumMs = 0;
+
+  for (let i = 0; i < totalSteps; i++) {
+    const toolName = toolSequence[i];
+    const category = toolName.startsWith('Web') || toolName.startsWith('google') ? 'web_search'
+      : toolName.startsWith('mcp') || toolName.includes('discover') || toolName.includes('company') || toolName.includes('fundamental') ? 'financial_direct'
+      : 'file_ops';
+    const stepClass = category === 'web_search' ? 'step-web' : 'step-financial';
+
+    // Build input from context
+    const toolInput = buildOfflineInput(toolName, entities, context);
+    const durationMs = [520, 636, 979, 3000, 2000][i] || 400 + Math.floor(Math.random() * 200);
+
+    // Tool start
+    document.getElementById('mcp-pipeline').innerHTML +=
+      '<div class="mcp-step ' + stepClass + ' expanded" id="off-step-' + i + '">' +
+      '<div class="step-header" onclick="toggleStep(\'off-step-' + i + '\')">' +
+      '<span>🔹 Step ' + (i+1) + ': ' + _esc(toolName) + '</span>' +
+      '<span style="font-size:0.62rem;color:var(--text-tertiary);"><span class="pulse">⟳</span></span>' +
+      '</div>' +
+      '<div class="step-body">' +
+      '<div class="io-section"><div class="io-label">Input</div><div class="json-block">' + _esc(JSON.stringify(toolInput, null, 2)) + '</div></div>' +
+      '<div class="io-section"><div class="io-label">Output</div><div class="json-block" id="off-step-output-' + i + '">Executing...</div></div>' +
+      '</div></div>';
+
+    await sleep(350);
+
+    // Tool output
+    const output = generateOfflineOutput(toolName, toolInput, entities, context);
+    context.push({tool: toolName, input: toolInput, output, duration_ms: durationMs});
+    cumMs += durationMs;
+
+    // Update step
+    const outputEl = document.getElementById('off-step-output-' + i);
+    if (outputEl) outputEl.textContent = JSON.stringify(output, null, 2);
+    const hdr = document.querySelector('#off-step-' + i + ' .step-header span:last-child');
+    if (hdr) hdr.innerHTML = durationMs + 'ms ✓';
+
+    // Context chain
+    const keys = Object.keys(output).filter(k => !['error','message','status','currency','fiscal_year_end'].includes(k)).slice(0, 3);
+    document.getElementById('context-chain').innerHTML +=
+      '<div class="context-link">' +
+      '<span style="font-weight:600;min-width:90px;font-size:0.66rem;">' + _esc(toolName) + '</span>' +
+      '<span class="link-arrow">→</span>' +
+      '<span style="font-size:0.64rem;color:var(--text-secondary);">' +
+      keys.map(k => '<span class="link-key">' + _esc(k) + '</span>: <span class="link-val">' + _esc(String(output[k]).slice(0, 40)) + '</span>').join(', ') +
+      '</span></div>';
+
+    updateProgress(i + 1, totalSteps);
+    document.getElementById('met-steps').textContent = i + 1;
+    document.getElementById('met-duration').textContent = (cumMs / 1000).toFixed(2) + 's';
+    document.getElementById('met-errors').textContent = '0';
+  }
+
+  // Answer extraction
+  document.getElementById('mcp-pipeline').innerHTML +=
+    '<div class="mcp-phase answer pulse">⟳ Extracting final answer from MCP outputs...</div>';
+  await sleep(400);
+  document.querySelectorAll('#mcp-pipeline .mcp-phase.answer.pulse').forEach(p => p.classList.remove('pulse'));
+
+  const answerData = generateOfflineAnswer(query, context);
+  showAnswer(answerData);
+  updateProgress(totalSteps, totalSteps);
+
+  // Update duration
+  document.getElementById('met-duration').textContent = (cumMs / 1000).toFixed(2) + 's';
+}
+
+function extractEntitiesOffline(query) {
+  const q = query.toLowerCase();
+  const companies = [];
+  const known = {
+    apple: ['Apple Inc.', 'AAPL'], tesla: ['Tesla Inc.', 'TSLA'],
+    microsoft: ['Microsoft Corp.', 'MSFT'], google: ['Alphabet Inc.', 'GOOGL'],
+    alphabet: ['Alphabet Inc.', 'GOOGL'], amazon: ['Amazon.com Inc.', 'AMZN'],
+    nvidia: ['NVIDIA Corp.', 'NVDA'], meta: ['Meta Platforms Inc.', 'META'],
+  };
+  for (const [key, [name, ticker]] of Object.entries(known)) {
+    if (q.includes(key)) companies.push({name, ticker});
+  }
+  const metrics = [];
+  ['revenue', 'eps', 'earnings per share', 'net income', 'growth', 'margin', 'ebitda'].forEach(m => {
+    if (q.includes(m)) metrics.push(m);
+  });
+  const periods = [];
+  ['FY2024', 'FY2023', 'Q1', 'Q2', 'Q3', 'Q4'].forEach(p => {
+    if (q.toLowerCase().includes(p.toLowerCase())) periods.push(p);
+  });
+  const queryType = companies.length > 1 ? 'multi_company' : 'single_company';
+  return {companies, metrics, periods, query_type: queryType};
+}
+
+function buildOfflineInput(toolName, entities, context) {
+  const company = entities.companies?.[0] || {};
+  for (const ctx of context) {
+    const out = ctx.output || {};
+    if (out.company_id) { company.id = out.company_id; company.name = company.name || out.company_name; }
+  }
+  let seriesIds = null;
+  for (const ctx of context) {
+    if (ctx.output?.series_ids) seriesIds = ctx.output.series_ids;
+  }
+
+  if (toolName.includes('discover_companies')) {
+    return {keywords: company.name || query.split(' ').slice(0,4).join(' ')};
+  }
+  if (toolName.includes('discover_company_series')) {
+    return {company_id: company.id || 320193, keywords: (entities.metrics || ['financials']).join(', '), periods: entities.periods || ['FY2024']};
+  }
+  if (toolName.includes('get_company_fundamentals')) {
+    return {company_id: company.id || 320193, series_ids: seriesIds || ['RETAIL_REV', 'NET_INC_Q', 'EPS_DILUTED'], periods: entities.periods || ['FY2024']};
+  }
+  if (toolName === 'WebSearch' || toolName === 'google_search') {
+    return {query: query.slice(0, 200), type: 'financial'};
+  }
+  if (toolName === 'WebFetch') {
+    return {url: 'https://finance.example.com/company/' + (company.ticker || 'AAPL')};
+  }
+  return {query: query.slice(0, 200)};
+}
+
+function generateOfflineOutput(toolName, toolInput, entities, context) {
+  if (toolName.includes('discover_companies')) {
+    const map = {apple:[320193,'Apple Inc.','AAPL'], tesla:[219863,'Tesla Inc.','TSLA'],
+      microsoft:[219864,'Microsoft Corp.','MSFT'], nvidia:[219867,'NVIDIA Corp.','NVDA']};
+    const kw = String(toolInput.keywords||'').toLowerCase();
+    for (const [k,v] of Object.entries(map)) {
+      if (kw.includes(k)) return {company_id:v[0], company_name:v[1], ticker:v[2], status:'active'};
+    }
+    return {company_id:320193, company_name:'Apple Inc.', ticker:'AAPL', status:'active'};
+  }
+  if (toolName.includes('discover_company_series')) {
+    return {series_ids:['RETAIL_REV','NET_INC_Q','EPS_DILUTED','REV_GROWTH_YOY','OP_INC_Q'],
+      series_names:['Revenue','Net Income','Diluted EPS','Revenue Growth YoY','Operating Income'],
+      periods_available:['FY2020','FY2021','FY2022','FY2023','FY2024']};
+  }
+  if (toolName.includes('get_company_fundamentals')) {
+    return {fundamentals:{Revenue_FY2024:391035000000, NetIncome_FY2024:93736000000, EPS_Diluted_FY2024:6.43,
+      Revenue_Growth_YoY:0.083, Operating_Income_FY2024:119000000000}, currency:'USD', fiscal_year_end:'2024-09-28'};
+  }
+  if (toolName === 'WebSearch' || toolName === 'google_search') {
+    return {results:[{title:'Financial Results FY2024', snippet:'Revenue: $391.04B, Net Income: $93.74B, EPS: $6.43', url:'https://example.com/financials'}], total_results:1};
+  }
+  if (toolName === 'WebFetch') {
+    return {content:'Financial data retrieved. Revenue: $391.04B. Net Income: $93.74B. EPS: $6.43.', status_code:200};
+  }
+  return {result:'ok'};
+}
+
+function generateOfflineAnswer(query, context) {
+  const q = query.toLowerCase();
+  if (q.includes('nvidia') || q.includes('nvda')) {
+    return {answer: 'NVIDIA FY2024: Revenue $60.9B (+126% YoY), Diluted EPS $11.93 (+586% YoY). Data center revenue drove growth with $47.5B.', confidence: 0.88, total_tools: context.length, total_context: context.length};
+  }
+  if (q.includes('apple') || q.includes('aapl')) {
+    return {answer: 'Apple Inc. FY2024: Revenue $391.04B, Net Income $93.74B, Diluted EPS $6.43. Revenue grew 8.3% year-over-year.', confidence: 0.91, total_tools: context.length, total_context: context.length};
+  }
+  if (q.includes('tesla') || q.includes('tsla')) {
+    return {answer: 'Tesla FY2024: Q3 EPS $0.72 (Non-GAAP), Q4 EPS $0.73 (Non-GAAP). Total automotive revenue $77.07B.', confidence: 0.85, total_tools: context.length, total_context: context.length};
+  }
+  return {answer: 'Based on MCP tool outputs: Revenue $391.04B, Net Income $93.74B, EPS $6.43.', confidence: 0.75, total_tools: context.length, total_context: context.length};
+}
+
+// ================================================================
+// Render Semantic Router Panel
+// ================================================================
+function renderRouterPanelV52(routeData) {
+  const candidates = routeData.candidates || [];
+  const grid = document.getElementById('router-grid');
+  const summary = document.getElementById('router-summary');
+  const reasoning = document.getElementById('router-reasoning');
+
+  if (!candidates.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-secondary);padding:32px;">No skills matched</div>';
+    return;
+  }
+
+  const tierA = candidates.filter(c => c.tier === 'A').length;
+  const tierB = candidates.filter(c => c.tier === 'B').length;
+  const tierC = candidates.filter(c => c.tier === 'C').length;
+  const best = candidates[0];
+
+  summary.innerHTML = '<span style="color:var(--green);">Tier A: ' + tierA + '</span> · <span style="color:var(--gold);">Tier B: ' + tierB + '</span> · <span style="color:var(--text-tertiary);">Tier C: ' + tierC + '</span> · <strong>Best:</strong> ' + _esc(best.name || '—');
+
+  // Show LLM reasoning
+  if (best.llm_reasoning) {
+    reasoning.style.display = 'block';
+    reasoning.innerHTML = '<strong>LLM Reasoning:</strong> ' + _esc(best.llm_reasoning);
+  } else if (routeData.method === 'semantic_llm') {
+    reasoning.style.display = 'block';
+    reasoning.innerHTML = '<strong>Semantic ranking</strong> via LLM re-ranking of top 40 keyword candidates';
+  } else {
+    reasoning.style.display = 'none';
+  }
+
+  grid.innerHTML = candidates.map(c => {
+    const isBest = c.rank === 1;
+    const tier = c.tier || 'C';
+    const tierClass = 'tier-' + tier.toLowerCase();
+    const semanticRank = c.semantic_rank ? ' <span class="semantic-badge">LLM #' + c.semantic_rank + '</span>' : '';
+
+    const toolsHtml = (c.tool_sequence || []).map((t, j) =>
+      '<span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--accent);">' + _esc(t) + '</span>' +
+      (j < (c.tool_sequence||[]).length-1 ? ' <span style="color:var(--text-tertiary);">→</span> ' : '')
+    ).join('');
+
+    return '<div class="router-card' + (isBest ? ' best' : '') + '">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+      '<span style="font-weight:600;font-size:0.72rem;color:var(--text);">#' + c.rank + ' ' + _esc((c.name||'Unknown').slice(0, 30)) + '</span>' +
+      '<span class="tier-badge ' + tierClass + '">' + tier + '</span>' +
+      '</div>' +
+      '<div style="margin-bottom:4px;line-height:1.5;">' + toolsHtml + '</div>' +
+      '<div style="display:flex;gap:10px;font-size:0.62rem;color:var(--text-tertiary);">' +
+      '<span>⚡ ~' + (c.estimated_total_ms || 0) + 'ms</span>' +
+      '<span>🔧 ' + (c.estimated_tool_calls || 0) + ' calls</span>' +
+      (c.support ? '<span>📊 ' + c.support + '</span>' : '') +
+      '</div>' +
+      (semanticRank ? '<div style="margin-top:3px;">' + semanticRank + '</div>' : '') +
+      '</div>';
+  }).join('');
+}
+
+// ================================================================
+// Generate offline candidates (same structure as v5.1 but with semantic fields)
+// ================================================================
+function generateOfflineCandidatesV52(query) {
+  const qLower = query.toLowerCase();
+  const candidates = [
+    { rank:1, tier:'A', skill_id:'fsp_4395', name:'Daloopa Financial Pipeline (3-step)',
+      tool_sequence:['discover_companies','discover_company_series','get_company_fundamentals'],
+      support:3293, consensus_score:0.571, estimated_total_ms:1380, estimated_tool_calls:3,
+      semantic_rank:1, llm_reasoning:'Best matches the financial data extraction intent — discovers company, finds available series, then retrieves fundamentals.',
+      description:'Three-step financial data pipeline for single-company fundamental analysis' },
+    { rank:2, tier:'A', skill_id:'fsp_9595', name:'Company Series → Fundamentals (2-step)',
+      tool_sequence:['discover_company_series','get_company_fundamentals'],
+      support:3872, consensus_score:0.429, estimated_total_ms:960, estimated_tool_calls:2,
+      semantic_rank:2, llm_reasoning:'',
+      description:'Two-step pipeline: discover series then retrieve fundamentals' },
+    { rank:3, tier:'A', skill_id:'fsp_4194', name:'Multi-Period Fundamental Analysis (4-step)',
+      tool_sequence:['discover_companies','discover_company_series','get_company_fundamentals','get_company_fundamentals'],
+      support:263, consensus_score:0.286, estimated_total_ms:1730, estimated_tool_calls:4,
+      semantic_rank:3, llm_reasoning:'',
+      description:'Four-step pipeline for multi-period fundamental analysis' },
+    { rank:4, tier:'B', skill_id:'semantic_3', name:'Corporate Expansion Research',
+      tool_sequence:['WebSearch'], support:4677, consensus_score:0.333, estimated_total_ms:3000, estimated_tool_calls:1,
+      semantic_rank:4, llm_reasoning:'',
+      description:'General web search for corporate and expansion research' },
+    { rank:5, tier:'B', skill_id:'semantic_8', name:'Financial Web Search → Fetch Pipeline',
+      tool_sequence:['WebSearch','WebFetch'], support:2850, consensus_score:0.375, estimated_total_ms:5000, estimated_tool_calls:2,
+      semantic_rank:5, llm_reasoning:'',
+      description:'Search then fetch financial data from web sources' },
+    { rank:6, tier:'B', skill_id:'seq_42', name:'WebSearch ×3 → Fundamentals (Hybrid)',
+      tool_sequence:['WebSearch','WebSearch','WebSearch','discover_companies','get_company_fundamentals'],
+      support:580, consensus_score:0.250, estimated_total_ms:9800, estimated_tool_calls:5,
+      semantic_rank:6, llm_reasoning:'',
+      description:'Redundant web searches before financial data pipeline' },
+    { rank:7, tier:'B', skill_id:'p3_t1', name:'P3 Hierarchical: Financial Data Pipeline',
+      tool_sequence:['discover_companies','discover_company_series','get_company_fundamentals','WebFetch'],
+      support:420, consensus_score:0.450, estimated_total_ms:2520, estimated_tool_calls:4,
+      semantic_rank:7, llm_reasoning:'',
+      description:'Phase 3 hierarchical pipeline with web fetch validation' },
+    { rank:8, tier:'C', skill_id:'seq_15', name:'WebSearch ×4 (Exploratory)',
+      tool_sequence:['WebSearch','WebSearch','WebSearch','WebSearch'],
+      support:890, consensus_score:0.143, estimated_total_ms:12000, estimated_tool_calls:4,
+      semantic_rank:8, llm_reasoning:'',
+      description:'Exploratory repeated web searches' },
+    { rank:9, tier:'C', skill_id:'seq_27', name:'Google Search → Discover → Fetch',
+      tool_sequence:['google_search','discover_companies','WebFetch'],
+      support:320, consensus_score:0.200, estimated_total_ms:5420, estimated_tool_calls:3,
+      semantic_rank:9, llm_reasoning:'',
+      description:'Google search first, then discover company and fetch details' },
+    { rank:10, tier:'C', skill_id:'p3_e12', name:'P3 Evolved: Parameterized Multi-Company',
+      tool_sequence:['discover_companies','discover_company_series','get_company_fundamentals','get_company_fundamentals','WebSearch'],
+      support:180, consensus_score:0.300, estimated_total_ms:3530, estimated_tool_calls:5,
+      semantic_rank:10, llm_reasoning:'',
+      description:'Phase 3 evolved multi-company parameterized pipeline' },
+  ];
+
+  // Boost financial pipelines for financial queries
+  const hasRevenue = qLower.includes('revenue') || qLower.includes('income') || qLower.includes('growth') || qLower.includes('eps');
+  if (hasRevenue) {
+    candidates[0].semantic_rank = 1;
+    candidates.sort((a, b) => (a.semantic_rank || 99) - (b.semantic_rank || 99));
+    candidates.forEach((c, i) => { c.rank = i + 1; });
+  }
+
+  return candidates;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ================================================================
+// Initialization
+// ================================================================
+function init() {
+  document.getElementById('demo-query').value = PRESETS['nvda'];
+  setTimeout(() => runOfflineV52Demo(PRESETS['nvda']), 500);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

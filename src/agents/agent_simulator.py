@@ -98,22 +98,22 @@ TOOL_REGISTRY = {
 # LLM-based answer extraction (shared across agents)
 # ---------------------------------------------------------------------------
 
-_llm_for_answer = None
+_llm_client = None
 
 
-def _get_answer_llm():
-    """Lazy load LLMEvaluator for answer extraction."""
-    global _llm_for_answer
-    if _llm_for_answer is None:
-        from evaluation.llm_evaluator import LLMEvaluator
-        _llm_for_answer = LLMEvaluator()
-    return _llm_for_answer
+def _get_llm():
+    """Lazy load LLMClient for answer extraction."""
+    global _llm_client
+    if _llm_client is None:
+        from src.llm_client import LLMClient
+        _llm_client = LLMClient()
+    return _llm_client
 
 
 def extract_answer_with_llm(question: str, tool_outputs: List[str],
                             expected: str = "") -> Tuple[str, float]:
-    """Use EFundGPT to extract the numeric answer from tool outputs."""
-    combined_outputs = "\n---\n".join(tool_outputs[-5:])  # last 5 outputs
+    """Use configured LLM to extract the numeric answer from tool outputs."""
+    combined_outputs = "\n---\n".join(tool_outputs[-5:])
     if len(combined_outputs) > 3000:
         combined_outputs = combined_outputs[:3000]
 
@@ -127,37 +127,19 @@ Tool outputs:
 Extract the most likely numeric answer based on the question. If you cannot find a relevant numeric value, return "N/A".
 Return ONLY a JSON object: {{"answer": "extracted_value", "confidence": 0.0_to_1.0}}"""
 
-    llm = _get_answer_llm()
-    try:
-        if os.getenv("EFUNDS_API_KEY") is None:
-            # Fallback: use regex
-            numbers = re.findall(r'[\d,]+\.?\d*', combined_outputs)
-            ans = numbers[-1].replace(",", "") if numbers else "N/A"
-            return ans, 0.5
-
-        resp = llm.client.chat.completions.create(
-            model="EFundGPT-air",
-            messages=[
-                {"role": "system", "content": "You are a financial data analyst. Output only valid JSON."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0,
-            extra_headers={
-                "Efunds-User-Name": llm.user,
-                "Efunds-Acc-Token": llm.user,
-                "Efunds-Source": "2025-SX",
-            }
-        )
-        content = resp.choices[0].message.content.strip()
-        if content.startswith("```"):
-            content = content.split("\n", 1)[1].rsplit("\n", 1)[0]
-        import json
-        result = json.loads(content)
-        return result.get("answer", "N/A"), float(result.get("confidence", 0.5))
-    except Exception:
+    llm = _get_llm()
+    if not llm.available:
         numbers = re.findall(r'[\d,]+\.?\d*', combined_outputs)
         ans = numbers[-1].replace(",", "") if numbers else "N/A"
         return ans, 0.5
+
+    import json as _json
+    result = llm.chat_json(prompt, system="You are a financial data analyst. Output only valid JSON.", temperature=0)
+    if result and "answer" in result:
+        return result.get("answer", "N/A"), float(result.get("confidence", 0.5))
+    numbers = re.findall(r'[\d,]+\.?\d*', combined_outputs)
+    ans = numbers[-1].replace(",", "") if numbers else "N/A"
+    return ans, 0.5
 
 
 # ---------------------------------------------------------------------------

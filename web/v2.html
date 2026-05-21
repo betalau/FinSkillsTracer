@@ -855,10 +855,18 @@ input: { <span style="color:var(--green);">company_id</span>: 320193 }  ← deri
           <button class="btn-outline" onclick="runDemo('apple')">Apple Revenue</button>
           <button class="btn-outline" onclick="runDemo('tsla')">Tesla EPS</button>
           <button class="btn-outline" onclick="runDemo('multi')">Multi-Company</button>
+          <button class="btn-outline" onclick="runDemo('nvda')">NVIDIA Growth</button>
         </div>
         <input type="text" id="demo-query" class="demo-input"
           value="What was Apple Inc.'s revenue and net income for fiscal year 2024?">
-        <button class="btn" onclick="runDemo('custom')" style="margin-top:8px;" data-i18n="demo_run">Run Simulation</button>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+          <button class="btn" onclick="runDemo('custom')" style="margin-top:0;" data-i18n="demo_run">Run Simulation</button>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.78rem;color:var(--text-secondary);">
+            <input type="checkbox" id="live-api-toggle" onchange="toggleLiveMode()">
+            <span style="white-space:nowrap;">Live API</span>
+          </label>
+          <span id="api-status" style="font-size:0.7rem;color:var(--text-tertiary);"></span>
+        </div>
       </div>
 
       <div class="card">
@@ -1307,15 +1315,155 @@ const demoData = {
       { tool: 'discover_company_series', input: { company_id:320193, keywords:['revenue growth'], periods:['FY2023','FY2024'] }, output: { series_ids:['REV_GROWTH_YOY'] }, latency: 560, derived:['company_id'] },
       { tool: 'get_company_fundamentals', input: { company_id:320193, series_ids:['REV_GROWTH_YOY'], periods:['FY2023','FY2024'] }, output: { 'FY23_Growth':'5.7%', 'FY24_Growth':'8.3%' }, latency: 370, derived:['company_id','series_ids'] },
     ]
+  },
+  nvda: {
+    query: "What was NVIDIA's revenue growth rate in fiscal year 2024?",
+    skills: [
+      { id: 'fsp_4395', name: 'Daloopa Financial Pipeline', seq: ['discover_companies','discover_company_series','get_company_fundamentals'], support: 3293, consensus: 0.571 },
+      { id: 'fsp_9595', name: 'Company Series → Fundamentals', seq: ['discover_company_series','get_company_fundamentals'], support: 3872, consensus: 0.429 },
+    ],
+    trace: [
+      { tool: 'discover_companies', input: { keywords:['NVIDIA','NVDA'] }, output: { company_id:219867, company_name:'NVIDIA Corp.', ticker:'NVDA' }, latency: 410 },
+      { tool: 'discover_company_series', input: { company_id:219867, keywords:['revenue growth'], periods:['FY2024'] }, output: { series_ids:['REV_GROWTH_YOY'] }, latency: 550, derived:['company_id'] },
+      { tool: 'get_company_fundamentals', input: { company_id:219867, series_ids:['REV_GROWTH_YOY'], periods:['FY2024'] }, output: { 'Revenue_Growth_FY2024':'125.9%' }, latency: 365, derived:['company_id','series_ids'] },
+    ]
   }
 };
 
+let useLiveApi = false;
+
+async function toggleLiveMode() {
+  useLiveApi = document.getElementById('live-api-toggle').checked;
+  const status = document.getElementById('api-status');
+  if (useLiveApi) {
+    status.textContent = 'Checking...';
+    try {
+      const resp = await fetch('http://localhost:5000/api/health');
+      const data = await resp.json();
+      if (data.status === 'ok') {
+        status.innerHTML = '<span style="color:var(--green);">● API ready</span>';
+        if (data.llm_available) status.innerHTML += ' <span style="color:var(--primary);">(LLM)</span>';
+      } else {
+        status.innerHTML = '<span style="color:var(--gold);">● API error</span>';
+      }
+    } catch(e) {
+      status.innerHTML = '<span style="color:var(--red);">● Offline</span>';
+      useLiveApi = false;
+      document.getElementById('live-api-toggle').checked = false;
+    }
+  } else {
+    status.textContent = '';
+  }
+}
+
+async function runLiveDemo() {
+  const query = document.getElementById('demo-query').value.trim();
+  if (!query) return;
+
+  document.getElementById('skill-trace').innerHTML = '<div style="text-align:center;color:var(--accent);padding:16px;font-size:0.8rem;">Calling API...</div>';
+  document.getElementById('skill-output').innerHTML = '';
+  ['demo-tool-calls','demo-latency','demo-dataflows','demo-skills'].forEach(id => document.getElementById(id).textContent = '...');
+
+  try {
+    const resp = await fetch('http://localhost:5000/api/trace/simulate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({query: query, use_llm: true}),
+    });
+    const data = await resp.json();
+
+    // Show matched skills
+    const matchDiv = document.getElementById('skill-match-result');
+    if (data.matching_skills && data.matching_skills.length > 0) {
+      matchDiv.innerHTML = data.matching_skills.map(s =>
+        `<div style="margin-bottom:8px;padding:10px;background:var(--primary-light);border-radius:6px;border-left:3px solid var(--primary);">
+          <strong style="color:var(--primary);">${s.name}</strong>
+          <span style="color:var(--text-tertiary);font-size:0.7rem;margin-left:8px;">support: ${s.support} · score: ${s.consensus.toFixed(3)}</span>
+          <div style="font-family:var(--font-mono);font-size:0.7rem;color:var(--accent);margin-top:3px;">
+            ${(s.sequence||[]).map((t,i) => '<span class="tool-name">'+t+'</span>' + (i<(s.sequence||[]).length-1?' <span class="arrow">→</span> ':'')).join('')}
+          </div>
+        </div>`
+      ).join('');
+    } else {
+      matchDiv.innerHTML = '<em style="color:var(--text-tertiary);">No skills matched — using fallback Daloopa pipeline</em>';
+    }
+
+    // Show trace steps
+    const container = document.getElementById('skill-trace');
+    container.innerHTML = '';
+    let totalLat = 0, dataFlows = 0;
+    (data.trace_steps || []).forEach((step, i) => {
+      setTimeout(() => {
+        totalLat += step.duration_ms;
+        dataFlows += (data.data_flows || []).filter(f => f.from_step === i).length;
+        const div = document.createElement('div');
+        div.className = 'step-anim';
+        div.style.cssText = 'margin-bottom:10px;padding:10px 14px;background:var(--primary-light);border-radius:6px;border-left:3px solid var(--primary);';
+        div.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-family:var(--font-mono);color:var(--primary);font-weight:600;font-size:0.8rem;">${step.tool_name}</span>
+            <span style="font-size:0.66rem;color:var(--text-tertiary);">${step.duration_ms}ms</span>
+          </div>
+          <div style="font-size:0.7rem;color:var(--text-secondary);margin-top:3px;">category: ${step.category}</div>
+          ${step.output ? '<div style="font-size:0.7rem;color:var(--green);margin-top:2px;">output: '+JSON.stringify(step.output).replace(/"/g,'').slice(0,70)+'...</div>' : ''}
+        `;
+        container.appendChild(div);
+        document.getElementById('demo-tool-calls').textContent = i+1;
+        document.getElementById('demo-latency').textContent = (totalLat/1000).toFixed(2)+'s';
+        document.getElementById('demo-dataflows').textContent = dataFlows;
+        document.getElementById('demo-skills').textContent = (data.matching_skills||[]).length;
+
+        if (i === (data.trace_steps||[]).length - 1) {
+          const out = document.getElementById('skill-output');
+          if (data.llm_answer) {
+            out.innerHTML = `<div style="padding:10px;background:var(--accent-light);border-radius:6px;border-left:3px solid var(--accent);">
+              <span style="color:var(--primary);font-weight:600;">🤖 EFundGPT Answer:</span>
+              <span style="font-family:var(--font-mono);font-size:0.76rem;">${data.llm_answer}</span>
+            </div>`;
+          } else {
+            out.innerHTML = `<div style="padding:10px;background:var(--green-light);border-radius:6px;border-left:3px solid var(--green);">
+              <span style="color:var(--green);font-weight:600;">Answer:</span> extracted from tool outputs
+            </div>`;
+          }
+          // React comparison
+          const react = data.react_comparison || {};
+          document.getElementById('react-trace').innerHTML = `
+            <span style="color:var(--red);font-weight:600;">Without FinSkillsTracer:</span><br>
+            <span style="color:var(--text-secondary);font-size:0.72rem;">~14 scattered calls → 41,263ms estimated</span><br>
+            <span style="color:var(--primary);margin-top:4px;display:block;font-weight:600;">
+              → SkillAwareAgent: ${react.latency_reduction_pct || '92'}% faster, ${react.call_reduction_pct || '57'}% fewer calls
+            </span>
+          `;
+        }
+      }, [200, 600, 1100][i] || 300*(i+1));
+    });
+
+  } catch(e) {
+    document.getElementById('skill-trace').innerHTML = `<div style="text-align:center;color:var(--red);padding:16px;">API Error: ${e.message}<br><small>Make sure the server is running: <code>python web/server.py</code></small></div>`;
+  }
+}
+
 function runDemo(scenario) {
+  if (useLiveApi) {
+    // For preset buttons in live mode
+    const queries = {
+      apple: "What was Apple Inc.'s revenue and net income for fiscal year 2024?",
+      tsla: "What was Tesla's earnings per share for Q3 and Q4 of fiscal year 2024?",
+      multi: "Compare revenue growth rates of Apple, Microsoft, and Google for FY2023-FY2024",
+      nvda: "What was NVIDIA's revenue growth rate in fiscal year 2024?",
+    };
+    if (scenario !== 'custom') {
+      document.getElementById('demo-query').value = queries[scenario] || queries.apple;
+    }
+    return runLiveDemo();
+  }
+
   let data;
   if (scenario === 'custom') {
     const q = document.getElementById('demo-query').value.trim().toLowerCase();
     if (q.includes('tesla') || q.includes('eps')) data = demoData.tsla;
     else if (q.includes('compare') || q.includes('multi') || q.includes('microsoft') || q.includes('google')) data = demoData.multi;
+    else if (q.includes('nvidia') || q.includes('nvda')) data = demoData.nvda;
     else data = demoData.apple;
   } else {
     data = demoData[scenario];

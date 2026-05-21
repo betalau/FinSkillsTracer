@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinSkillsTracer v5.3 — Real Financial APIs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;550;600;650;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DESIGN TOKENS — EFund Institutional + Premium Fintech
+   Primary: EFund Deep Blue · Gold: premium accent · Crimson: alerts
+   ============================================================ */
+:root {
+  --primary: #005096;
+  --primary-dark: #002a4e;
+  --primary-light: #e8f0f8;
+  --primary-soft: #f0f5fa;
+  --accent: #1b8fba;
+  --accent-light: #e6f7fc;
+  --bg: #F4F7F8;
+  --bg-white: #FFFFFF;
+  --card-bg: #FFFFFF;
+  --text: #1a2a3a;
+  --text-secondary: #5a6d80;
+  --text-tertiary: #8a9bb0;
+  --border: #E2E8EE;
+  --border-light: #EEF2F5;
+  --gold: #C8963E;
+  --gold-dark: #a67c2e;
+  --gold-light: #fdf6ea;
+  --red: #C41230;
+  --red-light: #fef0f2;
+  --green: #1a8c5e;
+  --green-light: #edf8f3;
+  --navy: #001f3f;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-lg: 14px;
+  --card-shadow: 0 2px 16px rgba(0,80,150,0.07), 0 0 0 1px rgba(0,80,150,0.04);
+  --card-shadow-hover: 0 8px 36px rgba(0,80,150,0.12), 0 0 0 1px rgba(0,80,150,0.07);
+  --card-shadow-gold: 0 2px 20px rgba(200,150,62,0.10), 0 0 0 1px rgba(200,150,62,0.12);
+  --font-sans: 'Inter','Segoe UI','PingFang SC','Microsoft YaHei',system-ui,sans-serif;
+  --font-mono: 'JetBrains Mono','SF Mono','Cascadia Code','Consolas',monospace;
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-sans);
+  background:linear-gradient(180deg, #F4F7F8 0%, #EDF1F5 30%, #F4F7F8 100%);
+  color:var(--text);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ============================================================
+   NAVIGATION — Premium Glassmorphism
+   ============================================================ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(255,255,255,0.88);
+  backdrop-filter:blur(16px) saturate(1.2);
+  -webkit-backdrop-filter:blur(16px) saturate(1.2);
+  border-bottom:1px solid rgba(0,80,150,0.08);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;height:56px;
+  box-shadow:0 1px 8px rgba(0,80,150,0.04);
+}
+nav .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.05rem;color:var(--primary);letter-spacing:-0.3px;}
+nav .logo svg{width:24px;height:24px;}
+nav .logo .ver{font-size:0.68rem;color:var(--text-tertiary);font-weight:500;margin-left:-4px;}
+nav .nav-links{display:flex;list-style:none;gap:24px;}
+nav .nav-links a{
+  font-size:0.8rem;font-weight:500;color:var(--text-secondary);
+  text-decoration:none;transition:color var(--transition);
+  position:relative;
+}
+nav .nav-links a::after{
+  content:'';position:absolute;bottom:-4px;left:0;right:0;height:2px;
+  background:var(--primary);border-radius:1px;
+  transform:scaleX(0);transition:transform var(--transition);
+}
+nav .nav-links a:hover{color:var(--primary)}
+nav .nav-links a:hover::after{transform:scaleX(1)}
+nav .nav-right{display:flex;align-items:center;gap:12px;}
+
+/* Model Switcher */
+.model-switcher{display:flex;gap:2px;background:var(--border-light);border-radius:8px;padding:2px;}
+.model-btn{
+  padding:5px 14px;border:none;border-radius:6px;cursor:pointer;
+  font-size:0.72rem;font-weight:600;font-family:var(--font-sans);
+  background:transparent;color:var(--text-secondary);transition:all var(--transition);
+  white-space:nowrap;
+}
+.model-btn:hover{color:var(--primary);background:rgba(0,80,150,0.04)}
+.model-btn.active{background:var(--bg-white);color:var(--primary);box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+.model-btn .dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;}
+.model-btn .dot.green{background:var(--green);box-shadow:0 0 6px rgba(26,140,94,0.4)}
+.model-btn .dot.gray{background:var(--text-tertiary)}
+
+/* Lang Toggle */
+.lang-btn{
+  background:var(--primary-light);border:1px solid var(--border);
+  color:var(--primary);padding:5px 14px;border-radius:16px;
+  cursor:pointer;font-size:0.76rem;font-weight:600;transition:all var(--transition);
+  display:flex;align-items:center;gap:5px;font-family:var(--font-sans);
+}
+.lang-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 2px 8px rgba(0,80,150,0.25)}
+
+/* ============================================================
+   HERO SECTION — Gradient Background + Animated Stats
+   ============================================================ */
+#hero{
+  min-height:48vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;
+  padding:110px 36px 56px;
+  background:linear-gradient(175deg, #f8fafc 0%, #eef3f8 40%, #f4f7f8 100%);
+  position:relative;overflow:hidden;
+}
+#hero::before{
+  content:'';position:absolute;top:-120px;right:-80px;
+  width:360px;height:360px;border-radius:50%;
+  background:radial-gradient(circle, rgba(0,80,150,0.04) 0%, transparent 70%);
+  pointer-events:none;
+}
+#hero::after{
+  content:'';position:absolute;bottom:-60px;left:-40px;
+  width:240px;height:240px;border-radius:50%;
+  background:radial-gradient(circle, rgba(30,185,225,0.04) 0%, transparent 70%);
+  pointer-events:none;
+}
+#hero h1{font-size:2.8rem;font-weight:800;color:var(--text);letter-spacing:-1.2px;line-height:1.15;max-width:720px;position:relative;z-index:1;}
+#hero h1 span{color:var(--primary);position:relative;}
+#hero h1 span::after{
+  content:'';position:absolute;bottom:4px;left:0;right:0;height:3px;
+  background:linear-gradient(90deg, var(--gold), transparent);
+  border-radius:2px;opacity:0.4;
+}
+#hero p{font-size:1.05rem;color:var(--text-secondary);margin-top:14px;max-width:600px;position:relative;z-index:1;}
+#hero .hero-stats{display:flex;gap:48px;margin-top:32px;position:relative;z-index:1;}
+#hero .hero-stat{text-align:center}
+#hero .hero-stat .val{
+  font-size:2.2rem;font-weight:800;color:var(--primary);
+  font-family:var(--font-mono);letter-spacing:-0.5px;
+}
+#hero .hero-stat .val.gold{color:var(--gold)}
+#hero .hero-stat .lbl{font-size:0.72rem;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;margin-top:2px;font-weight:500;}
+
+/* ============================================================
+   SECTIONS
+   ============================================================ */
+section{max-width:1160px;margin:0 auto;padding:48px 36px;}
+.section-tag{
+  display:inline-block;font-size:0.7rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:1.5px;color:var(--primary);background:var(--primary-light);
+  padding:4px 12px;border-radius:4px;margin-bottom:8px;
+}
+.section-title{font-size:1.8rem;font-weight:700;color:var(--text);letter-spacing:-0.5px;margin-bottom:6px;}
+.section-sub{font-size:0.9rem;color:var(--text-secondary);margin-bottom:28px;}
+
+/* ============================================================
+   QUERY BAR
+   ============================================================ */
+.query-bar{
+  display:flex;gap:10px;align-items:center;margin-bottom:16px;
+  background:var(--card-bg);border:2px solid transparent;
+  border-radius:var(--radius-lg);padding:6px;
+  box-shadow:var(--card-shadow);
+  transition:all var(--transition);
+}
+.query-bar:focus-within{
+  border-color:var(--primary);
+  box-shadow:0 4px 24px rgba(0,80,150,0.10), 0 0 0 1px rgba(0,80,150,0.08);
+}
+.query-input{
+  flex:1;border:none;outline:none;padding:10px 16px;
+  font-family:var(--font-mono);font-size:0.88rem;color:var(--text);
+  background:transparent;
+}
+.query-input:focus{outline:none}
+.query-input::placeholder{color:var(--text-tertiary);font-family:var(--font-sans);}
+.run-btn{
+  background:linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color:#fff;border:none;
+  border-radius:8px;padding:10px 24px;
+  font-weight:650;font-size:0.84rem;cursor:pointer;transition:all var(--transition);
+  font-family:var(--font-sans);white-space:nowrap;
+  box-shadow:0 2px 8px rgba(0,80,150,0.2);
+}
+.run-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,80,150,0.35)}
+.run-btn:disabled{background:var(--text-tertiary);cursor:not-allowed;transform:none;box-shadow:none}
+.run-btn.running{background:linear-gradient(135deg, var(--accent), #1478a0);animation:pulse-btn 1.5s infinite}
+@keyframes pulse-btn{0%,100%{opacity:1;box-shadow:0 2px 8px rgba(30,185,225,0.2)}50%{opacity:0.8;box-shadow:0 6px 16px rgba(30,185,225,0.35)}}
+
+/* Preset chips */
+.preset-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+.preset-chip{
+  padding:7px 18px;border:1px solid var(--border);border-radius:20px;
+  cursor:pointer;font-size:0.74rem;font-weight:500;color:var(--text-secondary);
+  background:var(--card-bg);transition:all var(--transition);font-family:var(--font-sans);
+}
+.preset-chip:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft);transform:translateY(-1px)}
+.preset-chip.active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 2px 8px rgba(0,80,150,0.2)}
+
+/* ============================================================
+   ROUTER PANEL
+   ============================================================ */
+#router-panel{margin-bottom:24px;}
+#router-summary{font-size:0.8rem;color:var(--text-secondary);margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+#router-reasoning{
+  font-size:0.76rem;color:var(--text-secondary);padding:10px 16px;
+  background:linear-gradient(135deg, var(--accent-light), #f0f9fc);
+  border-left:3px solid var(--accent);
+  border-radius:var(--radius-sm);
+  margin-bottom:12px;display:none;line-height:1.5;
+}
+.router-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+.router-card{
+  background:var(--card-bg);border:1px solid var(--border-light);
+  border-radius:var(--radius);padding:16px;cursor:pointer;
+  transition:all var(--transition);box-shadow:0 1px 4px rgba(0,0,0,0.03);
+  position:relative;
+}
+.router-card:hover{box-shadow:var(--card-shadow-hover);border-color:var(--primary-light);transform:translateY(-1px)}
+.router-card.best{
+  border-left:3px solid var(--primary);
+  background:linear-gradient(135deg, var(--primary-soft) 0%, var(--bg-white) 100%);
+  box-shadow:var(--card-shadow-gold);
+}
+.router-card.best::before{
+  content:'★ Best Match';position:absolute;top:8px;right:12px;
+  font-size:0.6rem;font-weight:700;color:var(--gold);letter-spacing:0.4px;
+}
+.tier-badge{
+  display:inline-block;padding:2px 10px;border-radius:10px;
+  font-size:0.66rem;font-weight:700;
+}
+.tier-a{background:var(--green-light);color:var(--green)}
+.tier-b{background:var(--gold-light);color:var(--gold)}
+.tier-c{background:var(--red-light);color:var(--red)}
+.semantic-badge{
+  display:inline-block;padding:1px 6px;border-radius:4px;
+  font-size:0.62rem;font-weight:600;background:var(--accent-light);color:#0d7a96;
+  margin-left:4px;
+}
+
+/* ============================================================
+   EXECUTION PIPELINE
+   ============================================================ */
+.exec-grid{
+  display:grid;grid-template-columns:1fr 340px;gap:20px;
+  margin-bottom:24px;
+}
+@media(max-width:900px){.exec-grid{grid-template-columns:1fr}}
+.pipeline-column{display:flex;flex-direction:column;gap:6px;position:relative;}
+
+/* Pipeline connector line */
+.pipeline-column::before{
+  content:'';position:absolute;left:26px;top:0;bottom:0;width:2px;
+  background:linear-gradient(180deg, var(--primary-light), var(--accent-light), var(--gold-light));
+  border-radius:1px;z-index:0;
+}
+
+/* Progress Bar */
+.progress-bar-wrap{display:none;margin-bottom:16px;}
+.progress-bar-wrap .label{font-size:0.72rem;color:var(--text-tertiary);margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.progress-bar{
+  height:5px;background:var(--border-light);border-radius:3px;overflow:hidden;
+}
+.progress-fill{height:100%;border-radius:3px;transition:width .4s cubic-bezier(0.4, 0, 0.2, 1);
+  background:linear-gradient(90deg, var(--primary), var(--accent));}
+
+/* Step Cards */
+.step-card{
+  background:var(--card-bg);border:1px solid var(--border-light);
+  border-radius:var(--radius);overflow:hidden;transition:all .3s;
+  position:relative;z-index:1;
+}
+.step-card:hover{box-shadow:var(--card-shadow-hover)}
+.step-card.pulse{animation:stepPulse 0.8s ease-out}
+@keyframes stepPulse{
+  0%{box-shadow:0 0 0 0 rgba(0,80,150,0.35);border-color:rgba(0,80,150,0.3)}
+  70%{box-shadow:0 0 20px 4px rgba(0,80,150,0);border-color:var(--border-light)}
+  100%{box-shadow:0 0 0 0 rgba(0,80,150,0)}
+}
+.step-header{
+  display:flex;align-items:center;gap:10px;padding:14px 16px;
+  cursor:pointer;user-select:none;font-size:0.82rem;
+}
+.step-header .step-num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border-radius:50%;font-size:0.7rem;font-weight:700;
+  background:linear-gradient(135deg, var(--primary-light), var(--primary-soft));
+  color:var(--primary);flex-shrink:0;
+  border:2px solid var(--primary-light);
+}
+.step-card.live-step .step-num{
+  background:linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color:#fff;border-color:var(--primary);
+  box-shadow:0 2px 8px rgba(0,80,150,0.3);
+}
+.step-header .tool-name{
+  font-family:var(--font-mono);font-weight:600;color:var(--primary);
+  font-size:0.78rem;
+}
+.step-header .tool-label{color:var(--text-secondary);font-size:0.74rem;font-weight:500;}
+.step-header .api-badge{
+  display:inline-block;padding:2px 8px;border-radius:4px;
+  font-size:0.62rem;font-weight:600;text-transform:uppercase;
+}
+.api-badge.alphavantage{background:var(--primary-light);color:var(--primary);border:1px solid rgba(0,80,150,0.1)}
+.api-badge.serpapi{background:var(--accent-light);color:#0d7a96;border:1px solid rgba(30,185,225,0.15)}
+.api-badge.requests{background:var(--border-light);color:var(--text-secondary)}
+.data-indicator{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:0.62rem;font-weight:600;margin-left:auto;
+  padding:2px 8px;border-radius:10px;
+}
+.data-indicator::before{content:'';width:6px;height:6px;border-radius:50%;}
+.data-indicator.live{color:var(--green);background:var(--green-light)}
+.data-indicator.live::before{background:var(--green);box-shadow:0 0 4px rgba(26,140,94,0.5)}
+.data-indicator.cached{color:var(--gold-dark);background:var(--gold-light)}
+.data-indicator.cached::before{background:var(--gold)}
+.data-indicator.error{color:var(--red);background:var(--red-light)}
+.data-indicator.error::before{background:var(--red)}
+.step-header .duration{font-size:0.68rem;color:var(--text-tertiary);font-family:var(--font-mono);}
+
+.step-body{padding:0 16px 16px 52px;display:none;}
+.step-card.expanded .step-body{display:block;}
+.step-card.error-card{border-left:3px solid var(--red);background:var(--red-light)}
+.io-section{margin-bottom:10px;}
+.io-label{
+  font-size:0.68rem;font-weight:650;text-transform:uppercase;
+  letter-spacing:0.6px;color:var(--text-tertiary);margin-bottom:4px;
+}
+.json-block{
+  background:#f8fafb;border:1px solid var(--border-light);
+  border-radius:var(--radius-sm);padding:10px 14px;
+  font-family:var(--font-mono);font-size:0.72rem;line-height:1.6;
+  overflow-x:auto;max-height:240px;overflow-y:auto;
+  white-space:pre-wrap;word-break:break-all;color:var(--text);
+  transition:all var(--transition);
+}
+.json-block:hover{background:#f4f7f9;border-color:var(--border)}
+
+/* ============================================================
+   CONTEXT COLUMN (right side)
+   ============================================================ */
+.context-column{display:flex;flex-direction:column;gap:16px;}
+.context-card{
+  background:var(--card-bg);border:1px solid var(--border-light);
+  border-radius:var(--radius);padding:18px;
+  box-shadow:0 1px 6px rgba(0,0,0,0.03);
+  transition:box-shadow var(--transition);
+}
+.context-card:hover{box-shadow:var(--card-shadow)}
+.context-card h3{
+  font-size:0.8rem;font-weight:650;color:var(--text);
+  margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border-light);
+  display:flex;align-items:center;gap:6px;
+}
+.context-link{
+  display:flex;align-items:center;gap:6px;padding:6px 0;
+  font-size:0.72rem;font-family:var(--font-mono);color:var(--text-secondary);
+}
+.context-link .arrow{color:var(--text-tertiary)}
+
+/* Metric mini cards */
+.metrics-mini{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.metric-mini{
+  text-align:center;padding:14px 8px;background:var(--bg);border-radius:var(--radius-sm);
+  border:1px solid var(--border-light);transition:all var(--transition);
+}
+.metric-mini:hover{background:var(--primary-soft);border-color:var(--primary-light)}
+.metric-mini .big-num{
+  font-size:1.4rem;font-weight:700;color:var(--primary);
+  font-family:var(--font-mono);letter-spacing:-0.3px;
+}
+.metric-mini .big-num.gold{color:var(--gold)}
+.metric-mini .big-num.green{color:var(--green)}
+.metric-mini .big-num.red{color:var(--red)}
+.metric-mini .lbl{font-size:0.64rem;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.4px;margin-top:2px;font-weight:500;}
+
+/* Source badges */
+.source-badges{display:flex;flex-wrap:wrap;gap:6px;}
+.source-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:12px;font-size:0.66rem;font-weight:600;
+}
+.source-badge.alphavantage{background:var(--primary-light);color:var(--primary)}
+.source-badge.serpapi{background:var(--accent-light);color:#0d7a96}
+.source-badge.requests{background:var(--border-light);color:var(--text-secondary)}
+.source-badge .count{font-size:0.6rem;opacity:0.7}
+
+/* Rate limit indicator */
+.rate-limit-indicator{font-size:0.68rem;color:var(--text-tertiary);margin-top:2px;}
+.rate-limit-indicator .bar-wrap{height:4px;background:var(--border-light);border-radius:2px;margin-top:4px;overflow:hidden;}
+.rate-limit-indicator .bar-fill{height:100%;border-radius:2px;transition:width .5s ease-out;}
+.rate-limit-indicator .bar-fill.ok{background:var(--green)}
+.rate-limit-indicator .bar-fill.warn{background:var(--gold)}
+.rate-limit-indicator .bar-fill.crit{background:var(--red)}
+
+/* ============================================================
+   ANSWER BOX
+   ============================================================ */
+.answer-box{
+  background:var(--card-bg);border:1px solid var(--border-light);
+  border-radius:var(--radius);padding:24px 28px;margin-bottom:32px;
+  box-shadow:var(--card-shadow);
+  border-left:3px solid var(--primary);
+}
+.answer-box .answer-label{
+  font-size:0.72rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:1px;color:var(--primary);margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.answer-content{font-size:0.88rem;line-height:1.75;color:var(--text);}
+.answer-content h2{font-size:1.05rem;font-weight:700;margin:16px 0 8px;color:var(--text);border-bottom:1px solid var(--border-light);padding-bottom:6px;}
+.answer-content h3{font-size:0.92rem;font-weight:650;margin:12px 0 6px;color:var(--text)}
+.answer-content strong{color:var(--primary);font-weight:650}
+.answer-content ul{margin:8px 0;padding-left:20px;}
+.answer-content li{margin-bottom:4px;}
+.answer-content li::marker{color:var(--primary)}
+.answer-meta{
+  display:flex;gap:16px;margin-top:14px;padding-top:12px;
+  border-top:1px solid var(--border-light);
+  font-size:0.72rem;color:var(--text-tertiary);flex-wrap:wrap;
+}
+
+/* ============================================================
+   EMPTY / LOADING STATES
+   ============================================================ */
+.empty-state{
+  text-align:center;padding:48px 24px;color:var(--text-tertiary);
+}
+.empty-state .icon{font-size:2.5rem;margin-bottom:12px;}
+.empty-state p{font-size:0.84rem;}
+.loading-pulse{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:20px;
+}
+.loading-pulse .dot{
+  width:8px;height:8px;border-radius:50%;background:var(--primary);
+  animation:dotPulse 1.4s infinite ease-in-out;
+}
+.loading-pulse .dot:nth-child(2){animation-delay:.2s}
+.loading-pulse .dot:nth-child(3){animation-delay:.4s}
+@keyframes dotPulse{0%,80%,100%{transform:scale(0.4);opacity:0.4}40%{transform:scale(1);opacity:1}}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer{
+  text-align:center;padding:32px 36px;border-top:1px solid var(--border);
+  color:var(--text-tertiary);font-size:0.74rem;
+  background:linear-gradient(180deg, var(--bg-white), var(--bg));
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media(max-width:768px){
+  nav .nav-links{display:none}
+  #hero h1{font-size:1.8rem}
+  #hero .hero-stats{gap:20px}
+  .exec-grid{grid-template-columns:1fr}
+  .metrics-mini{grid-template-columns:1fr 1fr}
+  section{padding:32px 16px}
+  .query-bar{padding:4px}
+  .run-btn{padding:8px 16px;font-size:0.76rem}
+  .pipeline-column::before{display:none}
+  .router-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAVIGATION
+     ============================================================ -->
+<nav>
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="14" width="4" height="7" rx="1" fill="var(--primary)"/>
+      <rect x="10" y="9" width="4" height="12" rx="1" fill="var(--primary)"/>
+      <rect x="17" y="4" width="4" height="17" rx="1" fill="var(--accent)"/>
+    </svg>
+    <span>FinSkillsTracer</span>
+    <span class="ver">v5.3</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#hero" data-i18n="nav_home">Home</a></li>
+    <li><a href="#router" data-i18n="nav_router">Router</a></li>
+    <li><a href="#pipeline" data-i18n="nav_pipeline">Pipeline</a></li>
+    <li><a href="#results" data-i18n="nav_results">Results</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="model-switcher" id="model-switcher">
+      <button class="model-btn active" data-provider="deepseek"><span class="dot green"></span>DeepSeek</button>
+      <button class="model-btn" data-provider="efund"><span class="dot gray"></span>EFund</button>
+      <button class="model-btn" data-provider="openai"><span class="dot gray"></span>OpenAI</button>
+      <button class="model-btn" data-provider="custom"><span class="dot gray"></span>Custom</button>
+    </div>
+    <button class="lang-btn" onclick="toggleLang()"><span id="lang-icon">中</span> <span id="lang-label">中文</span></button>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section id="hero">
+  <h1 data-i18n="hero_title"><span>Real Financial APIs</span> + Semantic Skill Router</h1>
+  <p data-i18n="hero_sub">Alpha Vantage fundamentals, SerpAPI web search, live exchange rates — all streamed step-by-step via SSE. Institutional-grade fintech tooling.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="val">12</div><div class="lbl">Real API Tools</div></div>
+    <div class="hero-stat"><div class="val">225</div><div class="lbl">Skills Bank</div></div>
+    <div class="hero-stat"><div class="val gold">5.3</div><div class="lbl">Version</div></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     QUERY + ROUTER
+     ============================================================ -->
+<section id="router">
+  <div class="section-tag" data-i18n="tag_query">Query</div>
+  <h2 class="section-title" data-i18n="router_title">Semantic Skill Router</h2>
+  <p class="section-sub" data-i18n="router_sub">LLM-powered two-phase routing: keyword pre-filter → semantic re-ranking. Multi-step financial pipelines preferred.</p>
+
+  <div class="query-bar">
+    <input type="text" class="query-input" id="query-input"
+           placeholder="e.g. What is Apple's revenue and P/E ratio?"
+           data-i18n-placeholder="query_placeholder"
+           onkeydown="if(event.key==='Enter')runQuery()">
+    <button class="run-btn" id="run-btn" onclick="runQuery()" data-i18n="btn_analyze">▶ Analyze</button>
+  </div>
+
+  <div class="preset-chips" id="preset-chips"></div>
+
+  <!-- Router Results -->
+  <div id="router-panel">
+    <div id="router-summary"></div>
+    <div id="router-reasoning"></div>
+    <div class="router-grid" id="router-grid"></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     EXECUTION PIPELINE
+     ============================================================ -->
+<section id="pipeline">
+  <div class="section-tag" data-i18n="tag_execution">Execution</div>
+  <h2 class="section-title" data-i18n="pipeline_title">Real-Time Execution Pipeline</h2>
+  <p class="section-sub" data-i18n="pipeline_sub">Each tool calls a real API. Results stream via SSE with live/cached/error status indicators.</p>
+
+  <div class="progress-bar-wrap" id="progress-wrap">
+    <div class="label"><span data-i18n="progress">Progress</span>: <span id="progress-text">0/0</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="exec-grid">
+    <div class="pipeline-column" id="pipeline-steps">
+      <div class="empty-state" id="pipeline-empty">
+        <div class="icon">⚡</div>
+        <p data-i18n="empty_pipeline">Enter a financial query above and click Analyze to see real API data flow through the pipeline.</p>
+      </div>
+    </div>
+    <div class="context-column">
+      <!-- Metrics -->
+      <div class="context-card" id="metrics-card">
+        <h3 data-i18n="exec_metrics">Execution Metrics</h3>
+        <div class="metrics-mini">
+          <div class="metric-mini"><div class="big-num" id="m-tools">-</div><div class="lbl" data-i18n="m_tools">Tools</div></div>
+          <div class="metric-mini"><div class="big-num" id="m-duration">-</div><div class="lbl" data-i18n="m_duration">Duration</div></div>
+          <div class="metric-mini"><div class="big-num" id="m-errors">-</div><div class="lbl" data-i18n="m_errors">Errors</div></div>
+          <div class="metric-mini"><div class="big-num" id="m-confidence">-</div><div class="lbl" data-i18n="m_conf">Confidence</div></div>
+        </div>
+      </div>
+      <!-- Data Sources -->
+      <div class="context-card" id="sources-card">
+        <h3 data-i18n="data_sources">Data Sources</h3>
+        <div class="source-badges" id="source-badges">
+          <span class="source-badge" style="opacity:0.4">Waiting for execution...</span>
+        </div>
+      </div>
+      <!-- Rate Limits -->
+      <div class="context-card" id="ratelimit-card">
+        <h3 data-i18n="rate_limits">API Rate Limits</h3>
+        <div id="rate-limit-display" style="font-size:0.72rem;color:var(--text-tertiary)">Fetching status...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Answer Box -->
+  <div class="answer-box" id="answer-box" style="display:none">
+    <div class="answer-label" data-i18n="answer_label">Synthesized Answer</div>
+    <div class="answer-content" id="answer-content"></div>
+    <div class="answer-meta">
+      <span id="answer-sources"></span>
+      <span id="answer-confidence"></span>
+      <span id="answer-time"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+  <p>FinSkillsTracer v5.3 · Real Financial APIs: Alpha Vantage + SerpAPI · Semantic Router + MCP-Style Execution</p>
+  <p style="margin-top:4px;font-size:0.68rem;">Institutional blue design language · SSE streaming · Multi-provider LLM support</p>
+</footer>
+
+<!-- ============================================================
+     SCRIPTS
+     ============================================================ -->
+<script>
+// ================================================================
+// Configuration
+// ================================================================
+const API_BASE = 'http://localhost:5003';
+let currentProvider = 'deepseek';
+let isRunning = false;
+
+// ================================================================
+// i18n
+// ================================================================
+const I18N = {
+  en: {
+    nav_home:'Home',nav_router:'Router',nav_pipeline:'Pipeline',nav_results:'Results',
+    hero_title:'<span>Real Financial APIs</span> + Semantic Skill Router',
+    hero_sub:'Alpha Vantage fundamentals, SerpAPI web search, live exchange rates — all streamed step-by-step via SSE. Institutional-grade fintech tooling.',
+    tag_query:'Query',router_title:'Semantic Skill Router',router_sub:'LLM-powered two-phase routing: keyword pre-filter → semantic re-ranking. Multi-step financial pipelines preferred.',
+    query_placeholder:'e.g. What is Apple\'s revenue and P/E ratio?',
+    btn_analyze:'▶ Analyze',btn_running:'⟳ Running...',
+    tag_execution:'Execution',pipeline_title:'Real-Time Execution Pipeline',
+    pipeline_sub:'Each tool calls a real API. Results stream via SSE with live/cached/error status indicators.',
+    progress:'Progress',empty_pipeline:'Enter a financial query above and click Analyze to see real API data flow through the pipeline.',
+    exec_metrics:'Execution Metrics',m_tools:'Tools',m_duration:'Duration',m_errors:'Errors',m_conf:'Confidence',
+    data_sources:'Data Sources',rate_limits:'API Rate Limits',
+    answer_label:'Synthesized Answer',
+    preset_apple:'Apple Financials',preset_tesla:'Tesla Earnings',
+    preset_msftvsaapl:'MSFT vs AAPL',preset_inflation:'US Inflation & Yields',
+    preset_fx:'USD/CNY Exchange',preset_news:'Financial News',
+  },
+  zh: {
+    nav_home:'首页',nav_router:'路由',nav_pipeline:'执行',nav_results:'结果',
+    hero_title:'<span>真实金融API</span> + 语义技能路由',
+    hero_sub:'Alpha Vantage 基本面数据、SerpAPI 网络搜索、实时汇率 — 全部通过SSE逐步流式输出。机构级金融科技工具。',
+    tag_query:'查询',router_title:'语义技能路由',router_sub:'LLM驱动的两阶段路由：关键词预过滤 → 语义重排序。优先选择多步骤金融数据管道。',
+    query_placeholder:'例如：苹果公司的营收和市盈率是多少？',
+    btn_analyze:'▶ 分析',btn_running:'⟳ 执行中...',
+    tag_execution:'执行',pipeline_title:'实时执行管道',
+    pipeline_sub:'每个工具调用真实API。结果通过SSE流式输出，并带有实时/缓存/错误状态指示。',
+    progress:'进度',empty_pipeline:'在上方输入金融查询并点击分析，即可看到真实API数据在管道中流动。',
+    exec_metrics:'执行指标',m_tools:'工具数',m_duration:'耗时',m_errors:'错误',m_conf:'置信度',
+    data_sources:'数据来源',rate_limits:'API速率限制',
+    answer_label:'综合回答',
+    preset_apple:'苹果财务',preset_tesla:'特斯拉盈利',
+    preset_msftvsaapl:'微软 vs 苹果',preset_inflation:'美国通胀与国债',
+    preset_fx:'美元/人民币汇率',preset_news:'财经新闻',
+  }
+};
+let currentLang = 'en';
+
+function t(key) {
+  return (I18N[currentLang] && I18N[currentLang][key]) || (I18N['en'][key]) || key;
+}
+
+function toggleLang() {
+  currentLang = currentLang === 'en' ? 'zh' : 'en';
+  document.getElementById('lang-icon').textContent = currentLang === 'en' ? '中' : 'EN';
+  document.getElementById('lang-label').textContent = currentLang === 'en' ? '中文' : 'English';
+  // Update all i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (el.tagName === 'INPUT' && el.hasAttribute('data-i18n-placeholder')) {
+      el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
+    }
+    if (key && I18N[currentLang] && I18N[currentLang][key]) {
+      if (key === 'hero_title') {
+        el.innerHTML = I18N[currentLang][key];
+      } else {
+        el.textContent = I18N[currentLang][key];
+      }
+    }
+  });
+  // Re-render presets
+  renderPresets();
+  // Update run button if running
+  const btn = document.getElementById('run-btn');
+  if (isRunning) btn.textContent = t('btn_running');
+  else btn.textContent = t('btn_analyze');
+}
+
+// ================================================================
+// Preset queries
+// ================================================================
+const PRESETS = [
+  { q:'What is Apple Inc revenue, net income, and P/E ratio for the latest fiscal year?', key:'preset_apple' },
+  { q:'What were Tesla earnings and EPS surprise for the latest quarter?', key:'preset_tesla' },
+  { q:'Compare Microsoft and Apple — market cap, P/E ratio, and revenue', key:'preset_msftvsaapl' },
+  { q:'What is the current US inflation rate, treasury yield, and unemployment rate?', key:'preset_inflation' },
+  { q:'What is the USD/CNY exchange rate and how has it trended?', key:'preset_fx' },
+  { q:'Latest financial news about the tech sector and AI stocks', key:'preset_news' },
+];
+
+function renderPresets() {
+  const container = document.getElementById('preset-chips');
+  container.innerHTML = PRESETS.map((p, i) =>
+    `<span class="preset-chip" onclick="runPreset(${i})">${t(p.key)}</span>`
+  ).join('');
+}
+
+function runPreset(idx) {
+  const q = PRESETS[idx].q;
+  document.getElementById('query-input').value = q;
+  // Highlight active chip
+  document.querySelectorAll('.preset-chip').forEach((c, i) => c.classList.toggle('active', i === idx));
+  runQuery();
+}
+
+// ================================================================
+// Model Switcher
+// ================================================================
+async function switchModel(provider) {
+  if (provider === currentProvider) return;
+  try {
+    const resp = await fetch(API_BASE + '/api/llm/switch', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({provider: provider})
+    });
+    const data = await resp.json();
+    if (data.switched) {
+      currentProvider = provider;
+      updateModelButtons();
+      // Also fetch health to update status
+      fetchHealth();
+    }
+  } catch(e) {
+    console.error('Model switch failed:', e);
+  }
+}
+
+function updateModelButtons() {
+  document.querySelectorAll('.model-btn').forEach(btn => {
+    const prov = btn.getAttribute('data-provider');
+    btn.classList.toggle('active', prov === currentProvider);
+    const dot = btn.querySelector('.dot');
+    if (dot) dot.className = 'dot ' + (prov === currentProvider ? 'green' : 'gray');
+  });
+}
+
+document.getElementById('model-switcher').addEventListener('click', function(e) {
+  const btn = e.target.closest('.model-btn');
+  if (btn && !isRunning) {
+    const provider = btn.getAttribute('data-provider');
+    if (provider) switchModel(provider);
+  }
+});
+
+// ================================================================
+// Health Check + Rate Limits
+// ================================================================
+async function fetchHealth() {
+  try {
+    const resp = await fetch(API_BASE + '/api/health');
+    const data = await resp.json();
+    // Update rate limit display
+    const rl = data.rate_limits || {};
+    let html = '';
+    const labels = {alphavantage:'Alpha Vantage', serpapi:'SerpAPI', requests:'Web Fetch'};
+    for (const [key, info] of Object.entries(rl)) {
+      const pct = info.limit > 0 ? (info.remaining / info.limit * 100) : 0;
+      const cls = pct > 50 ? 'ok' : (pct > 10 ? 'warn' : 'crit');
+      html += `<div style="margin-bottom:6px;">
+        <span>${labels[key] || key}: ${info.remaining}/${info.limit}</span>
+        <div class="bar-wrap"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div>
+      </div>`;
+    }
+    document.getElementById('rate-limit-display').innerHTML = html || 'No rate limit data';
+    // Update model buttons
+    if (data.llm_provider && data.llm_provider !== currentProvider) {
+      currentProvider = data.llm_provider;
+      updateModelButtons();
+    }
+    // Update available providers
+    const available = data.available_providers || [];
+    document.querySelectorAll('.model-btn').forEach(btn => {
+      const prov = btn.getAttribute('data-provider');
+      const dot = btn.querySelector('.dot');
+      if (available.includes(prov) || prov === currentProvider) {
+        if (dot && prov === currentProvider) dot.className = 'dot green';
+        btn.style.opacity = '1';
+      } else {
+        if (dot) dot.className = 'dot gray';
+        btn.style.opacity = '0.5';
+      }
+    });
+  } catch(e) {
+    console.error('Health check failed:', e);
+  }
+}
+
+// ================================================================
+// Main Query Execution
+// ================================================================
+async function runQuery() {
+  if (isRunning) return;
+  const query = document.getElementById('query-input').value.trim();
+  if (!query) return;
+
+  isRunning = true;
+  const btn = document.getElementById('run-btn');
+  btn.textContent = t('btn_running');
+  btn.classList.add('running');
+  btn.disabled = true;
+
+  // Reset UI
+  document.getElementById('pipeline-steps').innerHTML = '';
+  document.getElementById('pipeline-empty').style.display = 'none';
+  document.getElementById('answer-box').style.display = 'none';
+  document.getElementById('router-summary').textContent = '';
+  document.getElementById('router-reasoning').style.display = 'none';
+  document.getElementById('progress-wrap').style.display = 'block';
+  document.getElementById('progress-fill').style.width = '0%';
+  document.getElementById('progress-text').textContent = '0/0';
+  updateMetrics(null);
+
+  try {
+    // Step 1: Semantic Router
+    const routeResp = await fetch(API_BASE + '/api/skills/route', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({query: query, limit: 6})
+    });
+    const routeData = await routeResp.json();
+    renderRouterPanelV53(routeData);
+
+    const bestRoute = routeData.best_route;
+    // Note: server uses _build_smart_pipeline() to determine actual tool_sequence.
+    // The router's tool_sequence may contain old v5.2 tool names. We defer to the SSE meta event for accurate counts.
+
+    // Step 2: SSE Execution
+    const url = API_BASE + '/api/trace/execute?query=' + encodeURIComponent(query);
+    const response = await fetch(url);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let totalSteps = 0;
+    let completedSteps = 0;
+    let entities = null;
+    let totalDuration = 0;
+    let totalErrors = 0;
+    let finalConfidence = 0;
+    let dataSources = [];
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const evt = JSON.parse(line.slice(6));
+        handleSSEEventV53(evt);
+        // Update metrics
+        if (evt.type === 'meta') totalSteps = evt.tool_count || totalSteps;
+        if (evt.type === 'entities') entities = evt.entities;
+        if (evt.type === 'tool_done' && !evt.is_error) completedSteps++;
+        if (evt.type === 'tool_done' && evt.is_error) totalErrors++;
+        if (evt.type === 'answer') {
+          finalConfidence = evt.confidence || 0;
+          totalDuration = evt.total_duration_ms || 0;
+          totalErrors = evt.errors || totalErrors;
+          dataSources = evt.data_sources || [];
+        }
+        updateProgress(completedSteps, totalSteps);
+      }
+    }
+    updateMetrics({tools: totalSteps, duration: totalDuration, errors: totalErrors, confidence: finalConfidence, sources: dataSources});
+  } catch(e) {
+    const pipeline = document.getElementById('pipeline-steps');
+    pipeline.innerHTML += '<div class="step-card error-card expanded"><div class="step-header"><span style="color:var(--red);font-weight:600;">✗ Connection Error</span></div><div class="step-body"><div class="json-block" style="color:var(--red);">' + _esc(e.message) + '</div></div></div>';
+  } finally {
+    isRunning = false;
+    btn.textContent = t('btn_analyze');
+    btn.classList.remove('running');
+    btn.disabled = false;
+    fetchHealth(); // refresh rate limits
+  }
+}
+
+// ================================================================
+// SSE Event Handler
+// ================================================================
+function handleSSEEventV53(evt) {
+  const pipeline = document.getElementById('pipeline-steps');
+  // Remove empty state on first event
+  if (pipeline.querySelector('.empty-state')) pipeline.innerHTML = '';
+
+  switch (evt.type) {
+    case 'meta':
+      document.getElementById('progress-text').textContent = '0/' + (evt.tool_count || 0);
+      document.getElementById('pipeline-steps').innerHTML +=
+        '<div style="font-size:0.76rem;color:var(--text-secondary);padding:6px 0;">' +
+        'Tools: <span style="font-family:var(--font-mono);color:var(--primary);">' +
+        _esc((evt.tool_sequence || []).join(' → ')) + '</span> · ' +
+        'Model: ' + _esc(evt.provider || '?') + '/' + _esc(evt.model || '?') + '</div>';
+      break;
+
+    case 'phase':
+      if (evt.phase === 'throttle') {
+        pipeline.insertAdjacentHTML('beforeend',
+          '<div style="padding:6px 12px;font-size:0.7rem;color:var(--gold);background:var(--gold-light);border-radius:6px;margin:4px 0;">' +
+          '⏳ ' + _esc(evt.message) + '</div>');
+      } else if (evt.phase !== 'execute' && evt.phase !== 'synthesize') {
+        pipeline.insertAdjacentHTML('beforeend',
+          '<div class="step-card pulse" style="padding:8px 16px;font-size:0.72rem;color:var(--text-secondary);margin-bottom:4px;">' +
+          '⟳ ' + _esc(evt.message) + '</div>');
+      }
+      pipeline.scrollTop = pipeline.scrollHeight;
+      break;
+
+    case 'entities':
+      pipeline.querySelectorAll('.step-card.pulse').forEach(el => el.classList.remove('pulse'));
+      break;
+
+    case 'tool_start': {
+      const apiSrc = evt.api_source || '';
+      const cat = evt.category || '';
+      // Remove live-step from previous cards
+      pipeline.querySelectorAll('.step-card.live-step').forEach(el => el.classList.remove('live-step'));
+      pipeline.insertAdjacentHTML('beforeend',
+        '<div class="step-card pulse expanded live-step" id="step-' + evt.index + '">' +
+        '<div class="step-header" onclick="toggleStep(\'step-' + evt.index + '\')">' +
+        '<span class="step-num">' + (evt.index + 1) + '</span>' +
+        '<span class="tool-name">' + _esc(evt.tool) + '</span>' +
+        '<span class="tool-label">' + _esc(evt.tool_label || '') + '</span>' +
+        (apiSrc ? '<span class="api-badge ' + apiSrc + '">' + apiSrc + '</span>' : '') +
+        '<span class="data-indicator live">live</span>' +
+        '<span class="duration" id="dur-' + evt.index + '">...</span>' +
+        '</div>' +
+        '<div class="step-body"><div class="io-section"><div class="io-label">Input</div>' +
+        '<div class="json-block">' + _esc(JSON.stringify(evt.input_params || {}, null, 2)) + '</div></div>' +
+        '<div class="io-section"><div class="io-label">Output</div>' +
+        '<div class="json-block" id="step-output-' + evt.index + '">Waiting for API response...</div></div>' +
+        '</div></div>');
+      pipeline.scrollTop = pipeline.scrollHeight;
+      break;
+    }
+
+    case 'tool_done': {
+      const stepEl = document.getElementById('step-' + evt.index);
+      if (!stepEl) break;
+      stepEl.classList.remove('pulse', 'live-step');
+
+      // Update data indicator
+      const ds = evt.data_source || 'live';
+      const indicator = stepEl.querySelector('.data-indicator');
+      if (indicator) {
+        indicator.className = 'data-indicator ' + ds;
+        indicator.textContent = ds.toUpperCase();
+      }
+
+      // Update duration
+      const durEl = document.getElementById('dur-' + evt.index);
+      if (durEl) durEl.textContent = (evt.duration_ms || 0) + 'ms';
+
+      // Update output
+      const outEl = document.getElementById('step-output-' + evt.index);
+      if (outEl) {
+        if (evt.is_error) {
+          outEl.innerHTML = '<span style="color:var(--red);font-weight:600;">✗ ERROR: ' + _esc(evt.error_message || 'Unknown error') + '</span>';
+          stepEl.classList.add('error-card');
+        } else {
+          outEl.textContent = JSON.stringify(evt.output || {}, null, 2);
+        }
+      }
+
+      // Show note if cached/rate-limited
+      if (evt.note) {
+        const header = stepEl.querySelector('.step-header');
+        if (header) header.insertAdjacentHTML('beforeend',
+          '<span style="font-size:0.6rem;color:var(--gold);margin-left:4px;font-weight:500;">(' + _esc(evt.note) + ')</span>');
+      }
+      break;
+    }
+
+    case 'answer': {
+      document.getElementById('answer-box').style.display = 'block';
+      document.getElementById('answer-content').innerHTML = markdownToHtml(evt.answer || '');
+      document.getElementById('answer-confidence').textContent =
+        'Confidence: ' + ((evt.confidence || 0) * 100).toFixed(0) + '%';
+      document.getElementById('answer-sources').textContent =
+        'Sources: ' + ((evt.data_sources || []).join(', ') || 'none');
+      document.getElementById('answer-time').textContent =
+        'Duration: ' + (evt.total_duration_ms || 0) + 'ms';
+      break;
+    }
+  }
+}
+
+// ================================================================
+// Router Panel Renderer
+// ================================================================
+function renderRouterPanelV53(routeData) {
+  const candidates = routeData.candidates || [];
+  const grid = document.getElementById('router-grid');
+  const summary = document.getElementById('router-summary');
+  const reasoning = document.getElementById('router-reasoning');
+
+  if (!candidates.length) {
+    grid.innerHTML = '<div class="empty-state"><p>No skills matched. Using intent-based pipeline.</p></div>';
+    summary.textContent = '';
+    reasoning.style.display = 'none';
+    return;
+  }
+
+  const tierA = candidates.filter(c => c.tier === 'A').length;
+  const tierB = candidates.filter(c => c.tier === 'B').length;
+  const tierC = candidates.filter(c => c.tier === 'C').length;
+  const best = candidates[0];
+
+  summary.innerHTML =
+    '<span style="color:var(--green);">Tier A: ' + tierA + '</span> · ' +
+    '<span style="color:var(--gold);">Tier B: ' + tierB + '</span> · ' +
+    '<span style="color:var(--text-tertiary);">Tier C: ' + tierC + '</span> · ' +
+    '<strong>Best:</strong> ' + _esc((best.name || '').slice(0, 40));
+
+  if (best.llm_reasoning) {
+    reasoning.style.display = 'block';
+    reasoning.innerHTML = '<strong>LLM Reasoning:</strong> ' + _esc(best.llm_reasoning);
+  } else {
+    reasoning.style.display = 'none';
+  }
+
+  grid.innerHTML = candidates.map(c => {
+    const isBest = c.rank === 1;
+    const tier = c.tier || 'C';
+    const tierClass = 'tier-' + tier.toLowerCase();
+    const semRank = c.semantic_rank ? '<span class="semantic-badge">LLM #' + c.semantic_rank + '</span>' : '';
+    const toolsHtml = (c.tool_sequence || []).map((t, j) =>
+      '<span style="font-family:var(--font-mono);font-size:0.64rem;color:var(--accent);">' + _esc(t) + '</span>' +
+      (j < (c.tool_sequence || []).length - 1 ? ' <span style="color:var(--text-tertiary);">→</span> ' : '')
+    ).join('');
+
+    return '<div class="router-card' + (isBest ? ' best' : '') + '">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+      '<span style="font-weight:650;font-size:0.74rem;color:var(--text);">#' + c.rank + ' ' + _esc((c.name || 'Unknown').slice(0, 32)) + '</span>' +
+      '<span class="tier-badge ' + tierClass + '">' + tier + '</span></div>' +
+      '<div style="margin-bottom:4px;">' + toolsHtml + '</div>' +
+      '<div style="display:flex;gap:8px;font-size:0.62rem;color:var(--text-tertiary);">' +
+      '<span>⚡ ~' + (c.estimated_total_ms || 0) + 'ms</span>' +
+      '<span>🔧 ' + (c.estimated_tool_calls || 0) + ' calls</span>' +
+      (c.support ? '<span>📊 ' + c.support + '</span>' : '') + '</div>' +
+      (semRank ? '<div style="margin-top:3px;">' + semRank + '</div>' : '') + '</div>';
+  }).join('');
+}
+
+// ================================================================
+// Helpers
+// ================================================================
+function toggleStep(id) {
+  document.getElementById(id)?.classList.toggle('expanded');
+}
+
+function updateProgress(done, total) {
+  const pct = total > 0 ? (done / total * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = done + '/' + total;
+  if (done >= total && total > 0) {
+    document.getElementById('progress-fill').style.background = 'var(--green)';
+  }
+}
+
+function updateMetrics(m) {
+  document.getElementById('m-tools').textContent = m ? m.tools : '-';
+  document.getElementById('m-duration').textContent = m ? (m.duration + 'ms') : '-';
+  const errEl = document.getElementById('m-errors');
+  errEl.textContent = m ? m.errors : '-';
+  errEl.className = 'big-num' + (m && m.errors > 0 ? ' red' : '');
+  const confEl = document.getElementById('m-confidence');
+  const confPct = m ? (m.confidence > 1 ? m.confidence : (m.confidence * 100)) : null;
+  confEl.textContent = confPct != null ? confPct.toFixed(0) + '%' : '-';
+  confEl.className = 'big-num' + (confPct != null && confPct >= 90 ? '' : (confPct != null && confPct >= 70 ? ' gold' : ''));
+  // Data sources
+  if (m && m.sources && m.sources.length) {
+    document.getElementById('source-badges').innerHTML = m.sources.map(s =>
+      '<span class="source-badge ' + s + '">' + s.toUpperCase() + '</span>'
+    ).join('');
+  }
+}
+
+function _esc(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = String(str);
+  return div.innerHTML;
+}
+
+function markdownToHtml(md) {
+  if (!md) return '';
+  let html = _esc(md);
+  // Bold
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Headers
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  // Bullet points
+  html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>.*<\/li>)/s, function(m) { return '<ul>' + m + '</ul>'; });
+  // Line breaks
+  html = html.replace(/\n\n/g, '<br><br>');
+  html = html.replace(/\n/g, '<br>');
+  return html;
+}
+
+// ================================================================
+// Initialization
+// ================================================================
+function init() {
+  renderPresets();
+  fetchHealth();
+  // Refresh rate limits every 30s
+  setInterval(fetchHealth, 30000);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

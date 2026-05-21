@@ -13,10 +13,10 @@ from collections import defaultdict
 import json
 import time
 
-from agents.agent_simulator import (
+from src.agents.agent_simulator import (
     TraceEnvironment, SkillAwareAgent, ReActAgent, RandomAgent, AgentResult
 )
-from evaluation.llm_evaluator import LLMEvaluator
+from src.llm_client import LLMClient
 
 
 class UtilityEvaluator:
@@ -26,11 +26,11 @@ class UtilityEvaluator:
                  env: TraceEnvironment,
                  skills: List[Any],
                  test_queries: List[Dict[str, Any]],
-                 llm: Optional[LLMEvaluator] = None):
+                 llm: Optional[LLMClient] = None):
         self.env = env
         self.skills = skills
         self.test_queries = test_queries
-        self.llm = llm or LLMEvaluator()
+        self.llm = llm or LLMClient()
 
     def run_benchmark(self, num_queries: int = 50) -> Dict[str, Any]:
         """Run all three agents on test queries and compute metrics."""
@@ -94,15 +94,12 @@ class UtilityEvaluator:
         total_duration = sum(r.total_duration_ms for r in results)
         total_errors = sum(r.error_calls for r in results)
 
-        # EFundGPT evaluation of correctness
+        # LLM evaluation of correctness
         correct_count = 0
         for r, q in zip(results, queries):
             expected = str(q.get("expected_value", ""))
-            score = self.llm.eval_answer(
-                prompt=q.get("question", ""),
-                answer=r.answer,
-                gt=expected,
-            )
+            prompt_text = q.get("question", "")
+            score = self._eval_answer(prompt_text, r.answer, expected)
             if score >= 0.5:
                 correct_count += 1
 
@@ -161,8 +158,21 @@ class UtilityEvaluator:
 
         return metrics
 
+    def _eval_answer(self, prompt: str, answer: str, gt: str) -> float:
+        """Evaluate answer correctness using configured LLM."""
+        if not self.llm.available:
+            return 1.0 if str(answer) == str(gt) else 0.0
+        try:
+            content = f"Question: {prompt}\nAnswer: {answer}\nGround Truth: {gt}\n\nScore correctness from 0 to 1 and return ONLY the numeric score."
+            score_text = self.llm.chat(content, system="You are a financial evaluation judge.", temperature=0)
+            if score_text:
+                return float(score_text.strip())
+        except Exception:
+            pass
+        return 0.0
+
     def evaluate_skill_quality_llm(self, top_n: int = 10) -> List[Dict[str, Any]]:
-        """Use EFundGPT to judge Usefulness, Completeness, Generality of skills."""
+        """Use LLM to judge Usefulness, Completeness, Generality of skills."""
         if not self.skills:
             return []
 
@@ -190,26 +200,13 @@ Score:
 
 Return ONLY a JSON object: {{"usefulness": X, "completeness": X, "generality": X}}"""
 
-                resp = self.llm.client.chat.completions.create(
-                    model="EFundGPT-air",
-                    messages=[
-                        {"role": "system", "content": "You are a financial AI evaluation expert. Output only valid JSON."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    temperature=0,
-                    extra_headers={
-                        "Efunds-User-Name": self.llm.user,
-                        "Efunds-Acc-Token": self.llm.user,
-                        "Efunds-Source": "2025-SX",
-                    }
-                )
-                content = resp.choices[0].message.content.strip()
-                if content.startswith("```"):
-                    content = content.split("\n", 1)[1].rsplit("\n", 1)[0]
-                scores = json.loads(content)
-                scores["skill_id"] = skill.skill_id
-                scores["skill_name"] = skill.name
-                assessments.append(scores)
+                scores = self.llm.chat_json(prompt, system="You are a financial AI evaluation expert. Output only valid JSON.", temperature=0)
+                if scores and "usefulness" in scores:
+                    scores["skill_id"] = skill.skill_id
+                    scores["skill_name"] = skill.name
+                    assessments.append(scores)
+                else:
+                    raise ValueError("No valid scores returned")
             except Exception as e:
                 print(f"  LLM quality eval failed for {skill.skill_id}: {e}")
                 assessments.append({

@@ -5,7 +5,7 @@ from typing import List, Dict, Any, Optional, Tuple, Set
 from collections import defaultdict
 import numpy as np
 
-from openai import OpenAI
+from src.llm_client import LLMClient
 
 # Import canonical tool name for coverage matching
 try:
@@ -21,37 +21,23 @@ except ImportError:
 
 
 # ---------------------------------------------------------------------------
-# LLM Judge (EFundGPT)
+# LLM Judge (multi-provider via LLMClient)
 # ---------------------------------------------------------------------------
 
 class LLMEvaluator:
-    def __init__(self):
-        self.client = OpenAI(
-            base_url=os.getenv("EFUNDS_BASE_URL", "https://aigc.efunds.com.cn/v1"),
-            api_key=os.getenv("EFUNDS_API_KEY", "dummy_key")
-        )
-        self.user = os.getenv("EFUNDS_USER", "default_user")
+    def __init__(self, provider: str = None, model: str = None):
+        self.llm = LLMClient(provider=provider, model=model)
 
     def eval_answer(self, prompt: str, answer: str, gt: str) -> float:
-        if os.getenv("EFUNDS_API_KEY") is None:
+        if not self.llm.available:
             return 1.0 if str(answer) == str(gt) else 0.0
 
         try:
-            resp = self.client.chat.completions.create(
-                model="EFundGPT-air",
-                messages=[
-                    {"role": "system", "content": "You are a financial evaluation judge."},
-                    {"role": "user", "content": f"Question: {prompt}\nAnswer: {answer}\nGround Truth: {gt}\n\nScore correctness from 0 to 1 and return ONLY the numeric score."}
-                ],
-                temperature=0,
-                extra_headers={
-                    "Efunds-User-Name": self.user,
-                    "Efunds-Acc-Token": self.user,
-                    "Efunds-Source": "2025-SX",
-                }
-            )
-            score_text = resp.choices[0].message.content.strip()
-            return float(score_text)
+            content = f"Question: {prompt}\nAnswer: {answer}\nGround Truth: {gt}\n\nScore correctness from 0 to 1 and return ONLY the numeric score."
+            score_text = self.llm.chat(content, system="You are a financial evaluation judge.", temperature=0)
+            if score_text:
+                return float(score_text.strip())
+            return 0.0
         except Exception as e:
             print(f"Eval error: {e}")
             return 0.0
@@ -59,7 +45,7 @@ class LLMEvaluator:
     def generate_skill_description(self, tool_sequence: List[str],
                                    sample_inputs: List[Dict],
                                    trace_examples: List[str]) -> Dict[str, str]:
-        """Generate a financial-domain skill name and description using EFundGPT."""
+        """Generate a financial-domain skill name and description using LLM."""
         seq_str = " -> ".join(tool_sequence)
         input_snippets = "\n".join(
             [str(inp)[:200] for inp in sample_inputs[:3]]
@@ -80,40 +66,19 @@ Generate a JSON response with exactly two fields:
 
 Return ONLY valid JSON, no other text."""
 
-        if os.getenv("EFUNDS_API_KEY") is None:
+        if not self.llm.available:
             return {
                 "name": f"Skill: {' -> '.join(tool_sequence[:3])}",
                 "description": f"Executes tool sequence: {seq_str}"
             }
 
-        try:
-            resp = self.client.chat.completions.create(
-                model="EFundGPT-air",
-                messages=[
-                    {"role": "system", "content": "You are a financial AI agent expert. Output only valid JSON."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.3,
-                extra_headers={
-                    "Efunds-User-Name": self.user,
-                    "Efunds-Acc-Token": self.user,
-                    "Efunds-Source": "2025-SX",
-                }
-            )
-            import json
-            content = resp.choices[0].message.content.strip()
-            # Handle markdown code blocks
-            if content.startswith("```"):
-                content = content.split("\n", 1)[1]
-                if content.endswith("```"):
-                    content = content[:-3]
-            return json.loads(content)
-        except Exception as e:
-            print(f"LLM description generation error: {e}")
-            return {
-                "name": f"Skill: {' -> '.join(tool_sequence[:3])}",
-                "description": f"Executes tool sequence: {seq_str}"
-            }
+        result = self.llm.chat_json(prompt, system="You are a financial AI agent expert. Output only valid JSON.", temperature=0.3)
+        if result and "name" in result:
+            return result
+        return {
+            "name": f"Skill: {' -> '.join(tool_sequence[:3])}",
+            "description": f"Executes tool sequence: {seq_str}"
+        }
 
 
 # ---------------------------------------------------------------------------

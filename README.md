@@ -21,6 +21,121 @@ The optimization is organized in three phases, each improving a different aspect
 
 ---
 
+## Live Demos
+
+### v5.3 — Real Financial APIs + Semantic Skill Router (Latest)
+
+**Next-generation financial demo with real API tools.** Replaces v5.2's simulated MCP with actual Alpha Vantage and SerpAPI calls. Streams live financial data step-by-step via SSE.
+
+**Key Features:**
+- **12 Real Financial API Tools**: 7 Alpha Vantage (fundamentals, quotes, economic data) + 2 SerpAPI (web/news search) + web fetch + company comparison
+- **Real Data Pipeline**: Company overview → income statement → stock quote, all from live APIs
+- **Semantic Skill Router**: LLM-powered two-phase routing (keyword pre-filter → semantic re-ranking), retained from v5.2
+- **Smart Pipeline Builder**: Intent-based routing — LLM classifier → regex keyword fallback → skill bank mapping
+- **TTL Caching + Rate Limiting**: In-memory cache (60s-3600s TTL), shared-bucket rate limiter for Alpha Vantage free tier (5 calls/min)
+- **SSE Streaming**: Step-by-step execution with live/cached/error data source indicators
+- **EFund Institutional Blue Design**: Glassmorphism nav, metric cards, gold accents, animated pipeline nodes
+- **Multi-Provider LLM**: DeepSeek / EFund / OpenAI / Custom switchable via button group
+- **i18n**: Full English/中文 toggle
+- **Model Switching**: Runtime provider switching via POST /api/llm/switch
+
+#### Starting v5.3
+
+```bash
+# Install dependencies
+pip install flask flask-cors python-dotenv openai requests
+
+# Configure API keys in .env
+# Required: LLM_PROVIDER, DEEPSEEK_API_KEY (or EFund/OpenAI)
+# Optional: ALPHAVANTAGE_API_KEY, SERPAPI_KEY (for real financial data)
+
+# Start the server (port 5003)
+python web/server_5.3.py
+# → http://localhost:5003/api/health
+
+# Open the frontend
+start web/v5.3.html      # Windows
+open web/v5.3.html        # macOS
+
+# Or use Streamlit version
+streamlit run web/app_5.3.py
+# → http://localhost:8501
+```
+
+#### v5.3 Real Financial Tools
+
+| Tool | API Source | Endpoint | Cache TTL | Description |
+|------|-----------|----------|-----------|-------------|
+| `get_company_overview` | Alpha Vantage | OVERVIEW | 3600s | Company profile, sector, market cap, P/E, EPS, description |
+| `get_stock_quote` | Alpha Vantage | GLOBAL_QUOTE | 60s | Real-time price, change %, volume, day range |
+| `get_income_statement` | Alpha Vantage | INCOME_STATEMENT | 3600s | Annual revenue, gross profit, operating income, net income |
+| `get_balance_sheet` | Alpha Vantage | BALANCE_SHEET | 3600s | Total assets, liabilities, equity, debt ratios |
+| `get_cash_flow` | Alpha Vantage | CASH_FLOW | 3600s | Operating, investing, financing cash flows |
+| `get_earnings` | Alpha Vantage | EARNINGS | 1800s | Annual/quarterly EPS, estimates, surprises |
+| `get_market_data` | Alpha Vantage | TREASURY_YIELD/CPI/etc | 1800s | Economic indicators: yields, CPI, unemployment, GDP |
+| `get_fx_rate` | Alpha Vantage | CURRENCY_EXCHANGE_RATE | 300s | Real-time FX rate between any two currencies |
+| `web_search` | SerpAPI | Google Search | 300s | Organic search results: titles, snippets, links |
+| `search_news` | SerpAPI | Google News | 300s | Financial news articles with source + date |
+| `web_fetch` | requests | Any URL | 600s | Fetch + extract text content from web pages |
+| `compare_companies` | Alpha Vantage | Multi-call OVERVIEW+QUOTE | 3600s | Side-by-side comparison of up to 5 companies |
+
+#### v5.3 API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/health` | GET | Server status, API key validation, rate limits, cache stats |
+| `/api/skills/route` | POST | Semantic skill router — LLM-based relevance ranking |
+| `/api/trace/execute?query=...` | GET | **SSE stream** — real-time tool execution pipeline |
+| `/api/llm/providers` | GET | List available LLM providers + current selection |
+| `/api/llm/switch` | POST | Switch LLM provider at runtime |
+| `/api/tools` | GET | List all 12 real tools with metadata + rate limits |
+| `/api/tools/<tool_id>/test` | GET | Quick test endpoint for a single tool |
+| `/api/skills` | GET/POST | Search or list skills bank |
+| `/api/skills/<id>` | GET | Skill detail by ID |
+| `/api/metrics` | GET | Phase 3 evaluation metrics |
+
+#### v5.3 Example API Calls
+
+```bash
+# Health check
+curl http://localhost:5003/api/health
+# → {"status":"ok","version":"5.3","tools_available":12,"api_keys":{"alphavantage":true,...}}
+
+# Semantic route
+curl -X POST http://localhost:5003/api/skills/route \
+  -H "Content-Type: application/json" \
+  -d '{"query":"compare Tesla and Ford financial performance","limit":5}'
+
+# SSE execution (streaming)
+curl "http://localhost:5003/api/trace/execute?query=What+is+Apple+revenue+and+PE+ratio"
+# → SSE events: meta → entities → tool_start/tool_done × 3 → answer → done
+
+# Switch model
+curl -X POST http://localhost:5003/api/llm/switch \
+  -H "Content-Type: application/json" \
+  -d '{"provider":"deepseek"}'
+```
+
+#### v5.3 Architecture
+
+```
+User Query → Semantic Router (keyword pre-filter → LLM re-ranking)
+           → Smart Pipeline Builder (LLM intent → regex → skill bank)
+           → Entity Extraction (LLM + COMPANY_TICKER_MAP ~250 entries)
+           → RealToolExecutor
+              ├── CACHE CHECK (TTL-based, per-tool config)
+              ├── RATE LIMIT CHECK (shared bucket per api_source)
+              └── API CALL (Alpha Vantage / SerpAPI / requests)
+           → Answer Synthesis (LLM from accumulated real data)
+           → SSE Stream to Frontend
+```
+
+---
+
+### v4.0 — Skill Router + Streaming + Comparison (Legacy)
+
+---
+
 ## Dataset
 
 **FinRetrieval** (from HuggingFace `daloopa/finretrieval`):
@@ -120,6 +235,16 @@ FinSkillsTracer/
 │   └── agents/
 │       └── agent_simulator.py        # P2.2/P2.3: SkillAwareAgent, ReActAgent, RandomAgent
 │
+├── web/                              # Live demo frontend + backend
+│   ├── v5.3.html                     # V5.3: Real APIs + SSE + EFund blue design
+│   ├── server_5.3.py                 # V5.3: Flask API (12 real tools + SSE streaming)
+│   ├── app_5.3.py                    # V5.3: Streamlit app (real APIs + model switching)
+│   ├── v4.html                       # V4.0: Skill Router + Streaming + 3-Column Compare
+│   ├── v2.html                       # V2.0: Enterprise presentation edition
+│   ├── index.html                    # V1.0: Dark theme presentation
+│   ├── server.py                     # V4.0 Flask API server
+│   └── app.py                        # Streamlit v3.0 demo
+│
 ├── experiments/
 │   ├── run_ablation.py               # Ablation study (all strategies × sizes)
 │   ├── run_phase2.py                 # Phase 2 experiment runner
@@ -127,6 +252,8 @@ FinSkillsTracer/
 │   ├── plot_ablation.py              # Ablation visualization
 │   └── visualize_results.py          # Scaling law visualization
 │
+├── skills_bank_v2.json               # 225 mined skills
+├── phase3_results.json               # Phase 3 evaluation metrics
 ├── .env.sample                       # API key template
 ├── .gitignore
 └── README.md
@@ -232,25 +359,39 @@ Parameters classified: `company_id` = **derived**, `keywords` = **variable**, `p
 
 Create `.env` from the template:
 
-```bash
-cp .env.sample .env
-```
-
 ```env
+LLM_PROVIDER=deepseek
+
+# DeepSeek (default for v5.3)
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_API_KEY=your_deepseek_api_key_here
+
+# EFund (易方达) — enterprise LLM
 EFUNDS_BASE_URL=https://aigc.efunds.com.cn/v1
-EFUNDS_API_KEY=your_api_key_here
+EFUNDS_API_KEY=your_efund_api_key_here
 EFUNDS_USER=SX-your_username
+
+# OpenAI (optional)
+# OPENAI_BASE_URL=https://api.openai.com/v1
+# OPENAI_API_KEY=your_openai_key
+
+# Real Financial Data APIs (v5.3)
+ALPHAVANTAGE_API_KEY=your_alphavantage_key    # Free tier: 5 calls/min
+SERPAPI_KEY=your_serpapi_key                  # 100 calls/month free
 ```
 
-The project degrades gracefully without an API key:
-- Skill descriptions → template-based fallback
-- Answer extraction → regex-based fallback
-- Skill quality assessment → default score fallback
+**API Key Notes for v5.3:**
+- **LLM key** (DeepSeek/EFund/OpenAI) — required for skill routing + answer synthesis
+- **Alpha Vantage** — free tier at [alphavantage.co](https://www.alphavantage.co/support/#api-key), 5 calls/min shared across all tool types
+- **SerpAPI** — free tier at [serpapi.com](https://serpapi.com/), 100 searches/month
+
+The server degrades gracefully without financial API keys — tools requiring missing keys return config errors rather than crashing.
 
 ---
 
 ## Dependencies
 
+**Core pipeline:**
 ```
 pandas>=1.5
 numpy>=1.24
@@ -259,18 +400,49 @@ python-dotenv>=1.0
 openai>=1.0
 ```
 
-Optional: `matplotlib`, `seaborn` (for visualization scripts).
+**Web demo (v5.3):**
+```
+flask>=2.3
+flask-cors>=4.0
+requests>=2.28
+```
+
+**Web demo (v4.0):**
+```
+flask>=2.3
+flask-cors>=4.0
+```
+
+**Streamlit demo (v5.3 / v3.0):**
+```
+streamlit>=1.28
+pandas>=1.5
+```
+
+**Visualization (optional):**
+```
+matplotlib, seaborn
+```
 
 ---
 
 ## Key Design Decisions
 
+### Mining Pipeline (v1-v4)
 1. **Train/test split by query index** — Same query's 14 traces stay together to prevent cross-configuration leakage
 2. **Tool-category-aware consensus** — Full-tool skills max at 8 configs, web skills at 14
 3. **Canonical tool names** — `mcp__daloopa__X` normalized to `X` for coverage matching across namespace variants
 4. **Recursive JSON parsing in P3.2** — Handles outputs nested as `{"type":"text","text":"{...}"}` in Daloopa API responses
 5. **Elitism + tournament selection in P3.3** — Preserves top 20 skills per generation, k=3 tournament for parent selection
 6. **Backward-compatible evolution** — `SkillClawEvolver` (V1 merge) kept for Phase 1/2, `EvolutionarySkillClaw` for Phase 3
+
+### v5.3 Real API Demo
+7. **Shared rate limiting bucket** — Alpha Vantage free tier (5 calls/min) shared across ALL tool types, not per-tool. SerpAPI and web fetch have separate buckets
+8. **Three-tier pipeline routing** — LLM intent classifier → regex keyword fallback → skill bank OLD_TO_NEW mapping (last resort). Prevents old v5.2 simulated tool names from leaking into v5.3 real pipelines
+9. **No serpapi package dependency** — Uses `requests.get()` directly to SerpAPI HTTP API, avoiding pip dependency issues
+10. **TTL-based cache with rate-limit fallback** — When rate-limited, accepts stale cached data with extended TTL (99999s) rather than failing
+11. **Company name → ticker resolution** — Three-tier: built-in COMPANY_TICKER_MAP (~250 entries) → Alpha Vantage SYMBOL_SEARCH → LLM inference
+12. **Direct HTTP (no bs4)** — Web fetch uses regex-based HTML text extraction (strip scripts/styles → strip tags → collapse whitespace), avoiding BeautifulSoup dependency
 
 ---
 

@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinSkillsTracer v5.0 — Intelligent Skill Router & Multi-Strategy Comparison</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ============================================================
+   FinSkillsTracer v5.0 — Intelligent Skill Router & Comparison
+   Color Palette: EFund Institutional Blue
+   ============================================================ */
+:root {
+  --primary: #005096; --primary-dark: #003a6f; --primary-light: #e8f0f8;
+  --accent: #1EB9E1; --accent-light: #e6f7fc;
+  --bg: #F4F7F8; --bg-white: #FFFFFF;
+  --card-shadow: 0 2px 16px rgba(0,80,150,0.07), 0 0 0 1px rgba(0,80,150,0.04);
+  --card-shadow-hover: 0 6px 32px rgba(0,80,150,0.11), 0 0 0 1px rgba(0,80,150,0.07);
+  --text: #1a2a3a; --text-secondary: #5a6d80; --text-tertiary: #8a9bb0;
+  --border: #E2E8EE; --border-light: #EEF2F5;
+  --gold: #C8963E; --gold-light: #fdf6ea;
+  --red: #C41230; --red-light: #fef0f2;
+  --green: #1a8c5e; --green-light: #edf8f3;
+  --radius: 10px; --radius-sm: 6px;
+  --font-sans: 'Inter','Segoe UI','PingFang SC','Microsoft YaHei',system-ui,sans-serif;
+  --font-mono: 'JetBrains Mono','SF Mono','Cascadia Code','Consolas',monospace;
+  --color-sa: #005096; --color-react: #C41230; --color-hybrid: #1a8c5e;
+  --bg-sa: #e8f0f8; --bg-react: #fef0f2; --bg-hybrid: #edf8f3;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; font-size:16px; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: var(--font-sans); line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Navigation */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index: 100;
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 36px; height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+nav .logo { font-weight: 700; font-size: 1rem; color: var(--primary); letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; }
+nav .logo .ver { color: var(--text-tertiary); font-weight: 400; font-size: 0.72rem; }
+nav .nav-links { display: flex; gap: 22px; list-style: none; align-items: center; }
+nav .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.8rem; font-weight: 500; transition: color .2s; }
+nav .nav-links a:hover { color: var(--primary); }
+nav .lang-btn {
+  background: var(--primary-light); border: 1px solid var(--border);
+  color: var(--primary); padding: 5px 14px; border-radius: 16px;
+  cursor: pointer; font-size: 0.76rem; font-weight: 600; transition: all .2s;
+}
+nav .lang-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+/* Sections */
+section { position: relative; z-index: 1; padding: 60px 36px; max-width: 1280px; margin: 0 auto; }
+.section-tag {
+  display: inline-block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--primary); margin-bottom: 8px;
+  padding: 4px 12px; background: var(--primary-light); border-radius: 4px;
+}
+.section-title { font-size: 2rem; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -0.5px; }
+.section-sub { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 32px; max-width: 700px; }
+
+/* Cards */
+.card {
+  background: var(--bg-white); border-radius: var(--radius);
+  box-shadow: var(--card-shadow); padding: 24px;
+  transition: box-shadow .25s, transform .25s;
+}
+.card:hover { box-shadow: var(--card-shadow-hover); }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 24px; border-radius: 6px; font-size: 0.82rem; font-weight: 600;
+  cursor: pointer; border: none; transition: all .2s; text-decoration: none;
+  font-family: var(--font-sans);
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,80,150,0.3); }
+.btn-outline { background: #fff; color: var(--primary); border: 1.5px solid var(--primary); }
+.btn-outline:hover { background: var(--primary-light); }
+.btn-sm { padding: 5px 12px; font-size: 0.72rem; border-radius: 4px; }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-accent:hover { background: #189fc4; }
+
+/* Query Input */
+.query-bar {
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  background: var(--bg-white); border-radius: 12px; padding: 8px;
+  box-shadow: var(--card-shadow); margin-bottom: 20px;
+}
+.query-bar input {
+  flex: 1; min-width: 280px; border: none; padding: 12px 16px;
+  font-size: 0.9rem; font-family: var(--font-sans); outline: none;
+  background: transparent; color: var(--text);
+}
+.query-bar input::placeholder { color: var(--text-tertiary); }
+.query-bar select {
+  border: 1.5px solid var(--border); border-radius: 6px;
+  padding: 8px 12px; font-size: 0.78rem; font-family: var(--font-sans);
+  background: #fff; color: var(--text); cursor: pointer; outline: none;
+  transition: border-color .2s;
+}
+.query-bar select:focus { border-color: var(--primary); }
+.preset-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+.preset-chip {
+  padding: 6px 16px; border-radius: 20px; font-size: 0.74rem;
+  cursor: pointer; border: 1px solid var(--border); background: #fff;
+  color: var(--text-secondary); transition: all .2s; font-weight: 500; white-space: nowrap;
+}
+.preset-chip:hover, .preset-chip.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+
+/* Router Panel */
+.router-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px; margin-bottom: 24px;
+}
+.router-card {
+  background: #fff; border: 2px solid var(--border); border-radius: 8px;
+  padding: 14px; cursor: pointer; transition: all .25s; position: relative;
+}
+.router-card:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(30,185,225,0.12); transform: translateY(-2px); }
+.router-card.best {
+  border-color: var(--primary); background: var(--primary-light);
+  box-shadow: 0 0 0 4px rgba(0,80,150,0.10);
+}
+.router-card.best::before {
+  content: '★ BEST'; position: absolute; top: -10px; right: 10px;
+  background: var(--primary); color: #fff; font-size: 0.6rem; font-weight: 700;
+  padding: 2px 10px; border-radius: 10px; letter-spacing: 1px;
+}
+.router-card .tier-badge {
+  display: inline-block; font-size: 0.6rem; font-weight: 700; padding: 2px 8px;
+  border-radius: 3px; letter-spacing: 0.5px;
+}
+.tier-a { background: var(--green-light); color: var(--green); }
+.tier-b { background: var(--gold-light); color: var(--gold); }
+.tier-c { background: var(--bg); color: var(--text-tertiary); }
+
+/* Streaming Terminal */
+.terminal {
+  background: #0d1b2a; border-radius: 10px; padding: 20px;
+  font-family: var(--font-mono); font-size: 0.76rem; color: #00ff88;
+  min-height: 200px; max-height: 420px; overflow-y: auto;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3); position: relative;
+}
+.terminal .line { padding: 2px 0; opacity: 0; animation: fadeInLine 0.3s ease forwards; }
+.terminal .line.prompt { color: #00ff88; }
+.terminal .line.info { color: #1EB9E1; }
+.terminal .line.warn { color: #C8963E; }
+.terminal .line.error { color: #ff4444; }
+.terminal .line.result { color: #ffffff; font-weight: 600; }
+@keyframes fadeInLine { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+.terminal .cursor::after { content: '▊'; animation: blink 1s infinite; color: #00ff88; }
+@keyframes blink { 0%,50% { opacity:1; } 51%,100% { opacity:0; } }
+
+/* Three Columns */
+.compare-columns {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin: 24px 0;
+}
+@media (max-width: 900px) { .compare-columns { grid-template-columns: 1fr; } }
+.compare-col {
+  border-radius: 12px; overflow: hidden;
+  box-shadow: var(--card-shadow); transition: transform .25s;
+}
+.compare-col:hover { transform: translateY(-3px); }
+.compare-col .col-header {
+  padding: 18px 20px; color: #fff; font-weight: 700; font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.compare-col .col-body { padding: 16px 20px; background: #fff; }
+.compare-col .col-body .metric-row {
+  display: flex; justify-content: space-between; padding: 8px 0;
+  border-bottom: 1px solid var(--border-light); font-size: 0.8rem;
+}
+.compare-col .col-body .metric-label { color: var(--text-secondary); }
+.compare-col .col-body .metric-value { font-weight: 600; font-family: var(--font-mono); font-size: 0.78rem; }
+
+/* Trace steps in columns */
+.mini-step {
+  padding: 6px 10px; margin: 4px 0; border-radius: 4px;
+  font-family: var(--font-mono); font-size: 0.68rem;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.mini-step.ok { background: var(--green-light); border-left: 3px solid var(--green); }
+.mini-step.err { background: var(--red-light); border-left: 3px solid var(--red); }
+
+/* Gauges */
+.gauge-container { display: flex; gap: 16px; flex-wrap: wrap; margin: 16px 0; }
+.gauge {
+  text-align: center; position: relative; width: 80px; height: 80px;
+}
+.gauge canvas { width: 80px; height: 80px; }
+.gauge-label { font-size: 0.66rem; color: var(--text-tertiary); margin-top: 4px; font-weight: 600; }
+
+/* Comparison summary table */
+.summary-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.82rem; }
+.summary-table th {
+  background: var(--primary); color: #fff; padding: 10px 16px;
+  text-align: left; font-weight: 600; font-size: 0.74rem; letter-spacing: 0.5px;
+}
+.summary-table td { padding: 10px 16px; border-bottom: 1px solid var(--border-light); }
+.summary-table tr:hover td { background: var(--primary-light); }
+.summary-table .winner { color: var(--green); font-weight: 700; }
+.summary-table .highlight { background: var(--green-light); }
+
+/* Progress pulse */
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+.pulse { animation: pulse 1.5s ease-in-out infinite; }
+
+/* API status indicator */
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+.status-dot.online { background: var(--green); }
+.status-dot.offline { background: var(--red); }
+.status-dot.checking { background: var(--gold); animation: pulse 1s infinite; }
+
+/* Tooltip */
+.tip { cursor: help; border-bottom: 1px dotted var(--text-tertiary); }
+
+/* Scrollbar */
+.terminal::-webkit-scrollbar { width: 6px; }
+.terminal::-webkit-scrollbar-track { background: #0d1b2a; }
+.terminal::-webkit-scrollbar-thumb { background: #1a3a5c; border-radius: 3px; }
+
+/* Footer */
+footer { text-align: center; padding: 32px; color: var(--text-tertiary); font-size: 0.72rem; border-top: 1px solid var(--border); }
+footer a { color: var(--primary); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAVIGATION
+     ============================================================ -->
+<nav>
+  <div class="logo">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#005096"/><path d="M7 17V7l5 5-5 5zM12 12l5-5v10l-5-5z" fill="#fff"/></svg>
+    FinSkillsTracer <span class="ver">v5.0</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#demo" data-i18n="nav_demo">Live Demo</a></li>
+    <li><a href="#compare" data-i18n="nav_compare">Comparison</a></li>
+    <li><a href="#about" data-i18n="nav_about">About</a></li>
+    <li><a href="https://github.com/betalau/FinSkillsTracer" target="_blank">GitHub</a></li>
+    <li><button class="lang-btn" onclick="toggleLang()" id="lang-btn">中文</button></li>
+  </ul>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section style="padding-top:100px;">
+  <span class="section-tag">FinSkillsTracer v5.0</span>
+  <h1 class="section-title" data-i18n="hero_title">Intelligent Skill Router<br>&amp; Multi-Strategy Live Comparison</h1>
+  <p class="section-sub" data-i18n="hero_sub">
+    Enter a financial query and watch the skill router evaluate 10+ candidate traces in real-time,
+    select the optimal path, stream the execution, and compare three strategies side-by-side.
+  </p>
+</section>
+
+<!-- ============================================================
+     SECTION 1: LIVE DEMO WITH SKILL ROUTER
+     ============================================================ -->
+<section id="demo">
+  <span class="section-tag" data-i18n="demo_tag">Interactive Demo</span>
+  <h1 class="section-title" data-i18n="demo_title">Skill Router + Streaming Execution</h1>
+  <p class="section-sub" data-i18n="demo_sub">
+    The intelligent router evaluates query intent across 225 mined skills, ranks 10+ candidates,
+    selects the best route, and streams execution with live metrics.
+  </p>
+
+  <!-- Query Input -->
+  <div class="query-bar">
+    <input type="text" id="demo-query" data-i18n-placeholder="demo_placeholder"
+           placeholder="e.g., What was NVIDIA's revenue growth rate and EPS for FY2024?"
+           onkeydown="if(event.key==='Enter')runV4Demo()">
+    <select id="provider-select" onchange="onProviderChange()" data-i18n-title="provider_title" title="Select LLM provider">
+      <option value="">LLM Provider</option>
+    </select>
+    <button class="btn btn-primary" onclick="runV4Demo()" data-i18n="demo_run">▶ Run Analysis</button>
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.74rem;color:var(--text-secondary);white-space:nowrap;">
+      <input type="checkbox" id="live-api-toggle" onchange="toggleLiveMode()">
+      <span data-i18n="demo_live">Live API</span>
+      <span id="api-status" style="font-size:0.68rem;"></span>
+    </label>
+  </div>
+
+  <!-- Preset Scenarios -->
+  <div class="preset-chips">
+    <span data-i18n="demo_presets" style="font-size:0.72rem;color:var(--text-tertiary);padding:6px 0;margin-right:4px;">Presets:</span>
+    <button class="preset-chip active" onclick="selectPreset('nvda', this)" data-i18n="preset_nvda">NVIDIA FY2024</button>
+    <button class="preset-chip" onclick="selectPreset('aapl', this)" data-i18n="preset_aapl">Apple FY2024</button>
+    <button class="preset-chip" onclick="selectPreset('tsla', this)" data-i18n="preset_tsla">Tesla Q3/Q4 EPS</button>
+    <button class="preset-chip" onclick="selectPreset('compare', this)" data-i18n="preset_compare">FAANG Compare</button>
+    <button class="preset-chip" onclick="selectPreset('custom', this)" data-i18n="preset_custom">Custom Query</button>
+  </div>
+
+  <!-- Skill Router Panel -->
+  <div class="card" style="margin-bottom:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h3 style="font-size:0.9rem;color:var(--text);" data-i18n="router_title">
+        🎯 Skill Router — Top Candidate Traces
+      </h3>
+      <span id="router-summary" style="font-size:0.72rem;color:var(--text-tertiary);"></span>
+    </div>
+    <div class="router-grid" id="router-grid">
+      <div style="grid-column:1/-1;text-align:center;color:var(--text-tertiary);padding:32px;font-size:0.8rem;" data-i18n="router_placeholder">
+        Enter a query above to see the router evaluate 10+ candidate skills
+      </div>
+    </div>
+  </div>
+
+  <!-- Streaming Terminal -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+    <div>
+      <h3 style="font-size:0.85rem;color:var(--text);margin-bottom:10px;" data-i18n="terminal_title">🖥 Streaming Execution Trace</h3>
+      <div class="terminal" id="stream-terminal">
+        <div class="line prompt" style="opacity:1;">$ finrouter --query "..." --stream</div>
+        <div class="line info" style="opacity:1;">Initializing skill router...</div>
+        <div class="line info" style="opacity:1;">Awaiting query input <span class="cursor"></span></div>
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size:0.85rem;color:var(--text);margin-bottom:10px;" data-i18n="metrics_title">📊 Real-Time Metrics</h3>
+      <div class="card">
+        <div class="metric-row"><span class="metric-label" data-i18n="m_skills_matched">Skills Matched</span><span class="metric-value" id="m-skills">—</span></div>
+        <div class="metric-row"><span class="metric-label" data-i18n="m_router_tier">Best Route Tier</span><span class="metric-value" id="m-tier">—</span></div>
+        <div class="metric-row"><span class="metric-label" data-i18n="m_tool_calls">Tool Calls</span><span class="metric-value" id="m-calls">—</span></div>
+        <div class="metric-row"><span class="metric-label" data-i18n="m_latency">Total Latency</span><span class="metric-value" id="m-latency">—</span></div>
+        <div class="metric-row"><span class="metric-label" data-i18n="m_error_rate">Error Rate</span><span class="metric-value" id="m-errors">—</span></div>
+        <div class="metric-row"><span class="metric-label" data-i18n="m_data_flows">Data Flows Detected</span><span class="metric-value" id="m-flows">—</span></div>
+        <div class="metric-row"><span class="metric-label" data-i18n="m_answer">LLM Answer</span><span class="metric-value" id="m-answer" style="font-size:0.7rem;color:var(--green);">—</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 2: THREE-COLUMN STRATEGY COMPARISON
+     ============================================================ -->
+<section id="compare">
+  <span class="section-tag" data-i18n="compare_tag">Multi-Strategy Comparison</span>
+  <h1 class="section-title" data-i18n="compare_title">Three Strategies, One Query — Side by Side</h1>
+  <p class="section-sub" data-i18n="compare_sub">
+    Each strategy processes the same query simultaneously. Compare latency, tool calls, error rates,
+    and quantitative scores across the three approaches to see the improvement trajectory.
+  </p>
+
+  <!-- Three Columns -->
+  <div class="compare-columns" id="compare-columns">
+    <!-- Column A: Skill-Aware -->
+    <div class="compare-col">
+      <div class="col-header" style="background:var(--color-sa);">
+        <span>🧠 Skill-Aware Agent</span>
+        <span style="font-size:0.66rem;opacity:0.85;">Phase 2 Mined</span>
+      </div>
+      <div class="col-body" id="col-sa">
+        <div class="metric-row"><span class="metric-label">Status</span><span style="color:var(--text-tertiary);font-size:0.72rem;">Awaiting query...</span></div>
+        <div class="metric-row"><span class="metric-label">Tool Calls</span><span class="metric-value">—</span></div>
+        <div class="metric-row"><span class="metric-label">Latency</span><span class="metric-value">—</span></div>
+        <div class="metric-row"><span class="metric-label">Error Rate</span><span class="metric-value">—</span></div>
+        <div class="metric-row"><span class="metric-label">Coverage</span><span class="metric-value">—</span></div>
+        <div class="metric-row"><span class="metric-label">Confidence</span><span class="metric-value">—</span></div>
+        <div class="metric-row"><span class="metric-label">Consensus</span><span class="metric-value">—</span></div>
+      </div>
+    </div>
+
+    <!-- Column B: ReAct -->
+    <div class="compare-col">
+      <div class="col-header" style="background:var(--color-react);">
+        <span>🔄 ReAct Agent</span>
+        <span style="font-size:0.66rem;opacity:0.85;">Traditional Baseline</span>
+      </div>
+      <div class="col-body" id="col-react">
+        <div class="metric-row"><span class="metric-label">Status</span><span style="color:var(--text-tertiary);font-size:0.72rem;">Awaiting query...</span></div>
+        <div class="metric-row"><span class="metric-label">Tool Calls</span><span class="metric-value">—</span></div>
+        <div class="metric-row"><span class="metric-label">Latency</span><span class="metric-value">—</span></div>
+        <div class="metric-row"><span class="metric-label">Error Rate</span><span class="metric-value">—</span></div>
+        <div class="metric-row"><span class="metric-label">Coverage</span><span class="metric-value">—</span></div>
+        <div class="metric-row"><span class="metric-label">Confidence</span><span class="metric-value">—</span></div>
+        <div class="metric-row"><span class="metric-label">Consensus</span><span class="metric-value">—</span></div>
+      </div>
+    </div>
+
+    <!-- Column C: Hybrid-P3 -->
+    <div class="compare-col">
+      <div class="col-header" style="background:var(--color-hybrid);">
+        <span>⚡ Hybrid-P3 Agent</span>
+        <span style="font-size:0.66rem;opacity:0.85;">Phase 3 Evolved</span>
+      </div>
+      <div class="col-body" id="col-hybrid">
+        <div class="metric-row"><span class="metric-label">Status</span><span style="color:var(--text-tertiary);font-size:0.72rem;">Awaiting query...</span></div>
+        <div class="metric-row"><span class="metric-label">Tool Calls</span><span class="metric-value">—</span></div>
+        <div class="metric-row"><span class="metric-label">Latency</span><span class="metric-value">—</span></div>
+        <div class="metric-row"><span class="metric-label">Error Rate</span><span class="metric-value">—</span></div>
+        <div class="metric-row"><span class="metric-label">Coverage</span><span class="metric-value">—</span></div>
+        <div class="metric-row"><span class="metric-label">Confidence</span><span class="metric-value">—</span></div>
+        <div class="metric-row"><span class="metric-label">Consensus</span><span class="metric-value">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison Summary Table -->
+  <div class="card" style="margin-top:24px;" id="summary-card">
+    <h3 style="font-size:0.85rem;color:var(--text);margin-bottom:12px;" data-i18n="summary_title">📋 Quantitative Comparison Summary</h3>
+    <div style="overflow-x:auto;">
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th data-i18n="sum_metric">Metric</th>
+            <th style="background:#005096;">Skill-Aware (Phase 2)</th>
+            <th style="background:#C41230;">ReAct (Baseline)</th>
+            <th style="background:#1a8c5e;">Hybrid-P3 (Phase 3)</th>
+            <th data-i18n="sum_improvement">Improvement</th>
+          </tr>
+        </thead>
+        <tbody id="summary-body">
+          <tr><td data-i18n="sum_latency">Latency (ms)</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td data-i18n="sum_calls">Tool Calls</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td data-i18n="sum_error">Error Rate</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td data-i18n="sum_coverage">Coverage Score</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td data-i18n="sum_confidence">Confidence Score</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td data-i18n="sum_consensus">Consensus Score</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 3: ABOUT
+     ============================================================ -->
+<section id="about">
+  <span class="section-tag" data-i18n="about_tag">About</span>
+  <h1 class="section-title" data-i18n="about_title">FinSkillsTracer Project</h1>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+    <div class="card">
+      <h3 style="color:var(--primary);margin-bottom:8px;" data-i18n="about_problem">Problem Statement</h3>
+      <p style="font-size:0.82rem;color:var(--text-secondary);" data-i18n="about_problem_text">
+        Financial AI agents make redundant, unparameterized tool calls — repeating WebSearch 5-7×
+        per query without reusing parameters. FinSkillsTracer mines execution traces to extract
+        reusable, parameterized skill templates that reduce latency by 92% and tool calls by 57%.
+      </p>
+    </div>
+    <div class="card">
+      <h3 style="color:var(--primary);margin-bottom:8px;" data-i18n="about_data">Data &amp; Resources</h3>
+      <p style="font-size:0.82rem;color:var(--text-secondary);" data-i18n="about_data_text">
+        <strong>Dataset:</strong> <a href="https://huggingface.co/datasets/daloopa/finretrieval">daloopa/finretrieval</a>
+        — 7,000 traces, 500 queries, 14 LLM configs, 17 tool types.<br>
+        <strong>Code:</strong> <a href="https://github.com/betalau/FinSkillsTracer">github.com/betalau/FinSkillsTracer</a><br>
+        <strong>API:</strong> Multi-provider (EFundGPT, DeepSeek, OpenAI, Custom)
+</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  FinSkillsTracer v5.0 · Trace-to-Skills Mining for Financial AI Agents ·
+  <a href="https://github.com/betalau/FinSkillsTracer">GitHub</a> ·
+  <a href="https://huggingface.co/datasets/daloopa/finretrieval">Dataset</a>
+</footer>
+
+<!-- ============================================================
+     JAVASCRIPT: i18n + Demo Logic
+     ============================================================ -->
+<script>
+// ================================================================
+// i18n System (English / Chinese)
+// ================================================================
+const I18N = {
+  en: {
+    nav_demo: "Live Demo", nav_compare: "Comparison", nav_about: "About",
+    hero_title: "Intelligent Skill Router<br>&amp; Multi-Strategy Live Comparison",
+    hero_sub: "Enter a financial query and watch the skill router evaluate 10+ candidate traces in real-time, select the optimal path, stream the execution, and compare three strategies side-by-side.",
+    demo_tag: "Interactive Demo", demo_title: "Skill Router + Streaming Execution",
+    demo_sub: "The intelligent router evaluates query intent across 225 mined skills, ranks 10+ candidates, selects the best route, and streams execution with live metrics.",
+    demo_placeholder: "e.g., What was NVIDIA's revenue growth rate and EPS for FY2024?",
+    demo_run: "▶ Run Analysis", demo_live: "Live API", demo_presets: "Presets:",
+    provider_title: "Select LLM Provider", provider_fetching: "Fetching...",
+    preset_nvda: "NVIDIA FY2024", preset_aapl: "Apple FY2024", preset_tsla: "Tesla Q3/Q4 EPS",
+    preset_compare: "FAANG Compare", preset_custom: "Custom Query",
+    router_title: "🎯 Skill Router — Top Candidate Traces",
+    router_placeholder: "Enter a query above to see the router evaluate 10+ candidate skills",
+    terminal_title: "🖥 Streaming Execution Trace",
+    metrics_title: "📊 Real-Time Metrics",
+    m_skills_matched: "Skills Matched", m_router_tier: "Best Route Tier",
+    m_tool_calls: "Tool Calls", m_latency: "Total Latency",
+    m_error_rate: "Error Rate", m_data_flows: "Data Flows Detected",
+    m_answer: "LLM Answer",
+    compare_tag: "Multi-Strategy Comparison",
+    compare_title: "Three Strategies, One Query — Side by Side",
+    compare_sub: "Each strategy processes the same query simultaneously. Compare latency, tool calls, error rates, and quantitative scores across the three approaches to see the improvement trajectory.",
+    summary_title: "📋 Quantitative Comparison Summary",
+    sum_metric: "Metric", sum_improvement: "Improvement",
+    sum_latency: "Latency (ms)", sum_calls: "Tool Calls", sum_error: "Error Rate",
+    sum_coverage: "Coverage Score", sum_confidence: "Confidence Score",
+    sum_consensus: "Consensus Score",
+    col_tool_calls: "Tool Calls", col_latency: "Latency", col_error_rate: "Error Rate",
+    col_coverage: "Coverage", col_confidence: "Confidence", col_consensus: "Consensus",
+    about_tag: "About", about_title: "FinSkillsTracer Project",
+    about_problem: "Problem Statement",
+    about_problem_text: "Financial AI agents make redundant, unparameterized tool calls — repeating WebSearch 5-7× per query without reusing parameters. FinSkillsTracer mines execution traces to extract reusable, parameterized skill templates that reduce latency by 92% and tool calls by 57%.",
+    about_data: "Data & Resources",
+    about_data_text: '<strong>Dataset:</strong> <a href="https://huggingface.co/datasets/daloopa/finretrieval">daloopa/finretrieval</a> — 7,000 traces, 500 queries, 14 LLM configs, 17 tool types.<br><strong>Code:</strong> <a href="https://github.com/betalau/FinSkillsTracer">github.com/betalau/FinSkillsTracer</a><br><strong>API:</strong> Multi-provider (EFundGPT, DeepSeek, OpenAI, Custom) — switch via query bar',
+  },
+  zh: {
+    nav_demo: "实时演示", nav_compare: "策略对比", nav_about: "关于",
+    hero_title: "智能技能路由<br>&amp; 多策略实时对比",
+    hero_sub: "输入金融查询，实时观察技能路由器评估10+条候选轨迹、选择最优路径、流式执行，并并排对比三种策略的表现。",
+    demo_tag: "交互演示", demo_title: "技能路由 + 流式执行",
+    demo_sub: "智能路由器在225个挖掘技能中评估查询意图，对10+候选轨迹进行排序，选择最佳路由，并流式展示执行过程与实时指标。",
+    demo_placeholder: "例如：NVIDIA 2024财年的营收增长率和每股收益是多少？",
+    demo_run: "▶ 开始分析", demo_live: "实时API", demo_presets: "预设:",
+    provider_title: "选择LLM提供商", provider_fetching: "获取中...",
+    preset_nvda: "NVIDIA FY2024", preset_aapl: "Apple FY2024", preset_tsla: "Tesla Q3/Q4 EPS",
+    preset_compare: "FAANG 对比", preset_custom: "自定义查询",
+    router_title: "🎯 技能路由器 — 最佳候选轨迹",
+    router_placeholder: "输入查询以查看路由器评估10+候选技能",
+    terminal_title: "🖥 流式执行轨迹",
+    metrics_title: "📊 实时指标",
+    m_skills_matched: "匹配技能数", m_router_tier: "最佳路由等级",
+    m_tool_calls: "工具调用次数", m_latency: "总延迟",
+    m_error_rate: "错误率", m_data_flows: "数据流检测",
+    m_answer: "LLM 答案",
+    compare_tag: "多策略对比", compare_title: "三种策略，同一查询 — 并排对比",
+    compare_sub: "每种策略同时处理同一查询。对比延迟、工具调用次数、错误率和量化评分，观察改进轨迹。",
+    summary_title: "📋 量化对比汇总",
+    sum_metric: "指标", sum_improvement: "改进幅度",
+    sum_latency: "延迟 (ms)", sum_calls: "工具调用次数", sum_error: "错误率",
+    sum_coverage: "覆盖率评分", sum_confidence: "置信度评分",
+    sum_consensus: "共识度评分",
+    col_tool_calls: "工具调用", col_latency: "延迟", col_error_rate: "错误率",
+    col_coverage: "覆盖率", col_confidence: "置信度", col_consensus: "共识度",
+    about_tag: "关于", about_title: "FinSkillsTracer 项目",
+    about_problem: "问题陈述",
+    about_problem_text: "金融AI智能体存在冗余、未参数化的工具调用——每次查询重复WebSearch 5-7次却不复用参数。FinSkillsTracer通过挖掘执行轨迹，提取可复用的参数化技能模板，将延迟降低92%，工具调用减少57%。",
+    about_data: "数据与资源",
+    about_data_text: '<strong>数据集:</strong> <a href="https://huggingface.co/datasets/daloopa/finretrieval">daloopa/finretrieval</a> — 7,000条轨迹，500个查询，14种LLM配置，17种工具类型。<br><strong>代码:</strong> <a href="https://github.com/betalau/FinSkillsTracer">github.com/betalau/FinSkillsTracer</a><br><strong>API:</strong> 多供应商支持 (易方达EFundGPT、DeepSeek、OpenAI、自定义) — 通过查询栏切换',
+  }
+};
+
+let currentLang = 'en';
+function t(key) { return (I18N[currentLang] || I18N['en'])[key] || key; }
+
+function toggleLang() {
+  currentLang = currentLang === 'en' ? 'zh' : 'en';
+  document.getElementById('lang-btn').textContent = currentLang === 'en' ? '中文' : 'English';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (key && I18N[currentLang] && I18N[currentLang][key]) {
+      if (key === 'about_data_text' || key === 'about_problem_text' || key === 'hero_title' || key === 'hero_sub') {
+        el.innerHTML = I18N[currentLang][key];
+      } else {
+        el.textContent = I18N[currentLang][key];
+      }
+    }
+  });
+  // Update placeholder
+  const input = document.getElementById('demo-query');
+  if (input && I18N[currentLang] && I18N[currentLang]['demo_placeholder']) {
+    input.placeholder = I18N[currentLang]['demo_placeholder'];
+  }
+}
+
+// ================================================================
+// Preset Scenarios
+// ================================================================
+const PRESETS = {
+  nvda: "What was NVIDIA's revenue growth rate and earnings per share for fiscal year 2024?",
+  aapl: "What was Apple Inc.'s revenue and net income for fiscal year 2024?",
+  tsla: "What was Tesla's earnings per share for Q3 and Q4 of fiscal year 2024?",
+  compare: "Compare revenue growth rates of Apple, Microsoft, Google, Amazon and Meta for FY2023-FY2024",
+  custom: "",
+};
+
+function selectPreset(key, btn) {
+  document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  if (key !== 'custom') {
+    document.getElementById('demo-query').value = PRESETS[key];
+  } else {
+    document.getElementById('demo-query').value = '';
+    document.getElementById('demo-query').focus();
+  }
+}
+
+// ================================================================
+// Live API Mode
+// ================================================================
+let useLiveApi = false;
+const API_BASE = 'http://localhost:5000';
+
+async function toggleLiveMode() {
+  useLiveApi = document.getElementById('live-api-toggle').checked;
+  const status = document.getElementById('api-status');
+  if (useLiveApi) {
+    status.innerHTML = '<span class="status-dot checking"></span> Checking...';
+    try {
+      const resp = await fetch(API_BASE + '/api/health');
+      const data = await resp.json();
+      if (data.status === 'ok') {
+        status.innerHTML = '<span class="status-dot online"></span> Live (' + (data.llm_provider || '?') + ')';
+        fetchProviders();
+      } else {
+        status.innerHTML = '<span class="status-dot offline"></span> Error';
+      }
+    } catch(e) {
+      status.innerHTML = '<span class="status-dot offline"></span> Offline';
+      useLiveApi = false;
+      document.getElementById('live-api-toggle').checked = false;
+    }
+  } else {
+    status.textContent = '';
+  }
+}
+
+// ================================================================
+// Multi-Provider LLM Selector
+// ================================================================
+let currentProvider = 'efund';
+let availableProviders = [];
+
+async function fetchProviders() {
+  const sel = document.getElementById('provider-select');
+  if (!sel) return;
+  try {
+    const resp = await fetch(API_BASE + '/api/llm/providers');
+    const data = await resp.json();
+    availableProviders = data.providers || [];
+    currentProvider = data.current_provider || data.providers?.[0]?.id || 'efund';
+    sel.innerHTML = '';
+    availableProviders.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.label + ' (' + p.model + ')';
+      if (!p.api_key_set) opt.textContent += ' [no key]';
+      if (p.id === currentProvider) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  } catch(e) {
+    sel.innerHTML = '<option value="">' + t('provider_fetching') + '</option>';
+  }
+}
+
+async function onProviderChange() {
+  const sel = document.getElementById('provider-select');
+  if (!sel || !sel.value) return;
+  const newProvider = sel.value;
+  try {
+    const resp = await fetch(API_BASE + '/api/llm/switch', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({provider: newProvider}),
+    });
+    const data = await resp.json();
+    if (data.provider) {
+      currentProvider = data.provider;
+      document.getElementById('api-status').textContent = data.model || currentProvider;
+    }
+  } catch(e) {
+    console.error('Provider switch failed:', e);
+  }
+}
+
+// Fetch providers on load and when live mode is toggled
+document.addEventListener('DOMContentLoaded', function() {
+  if (useLiveApi) fetchProviders();
+});
+// ================================================================
+// V4.0 Main Demo: Router → Stream → Compare
+// ================================================================
+let _demoRunning = false;
+function _esc(s) { return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+async function runV4Demo() {
+  const query = document.getElementById('demo-query').value.trim();
+  if (!query) {
+    document.getElementById('demo-query').placeholder = t('demo_placeholder');
+    document.getElementById('demo-query').focus();
+    return;
+  }
+
+  // Reset UI
+  resetUI();
+
+  if (_demoRunning) return;  // Guard against double-click
+  _demoRunning = true;
+  document.querySelectorAll('.btn-primary').forEach(b => b.disabled = true);
+
+  try {
+    if (useLiveApi) {
+      await runLiveV4Demo(query);
+    } else {
+      await runOfflineV4Demo(query);
+    }
+  } finally {
+    _demoRunning = false;
+    document.querySelectorAll('.btn-primary').forEach(b => b.disabled = false);
+  }
+}
+
+function resetUI() {
+  document.getElementById('router-grid').innerHTML = '';
+  document.getElementById('router-summary').textContent = '';
+  document.getElementById('stream-terminal').innerHTML = '<div class="line prompt" style="opacity:1;">$ finrouter --query "..." --stream</div>';
+  ['sa','react','hybrid'].forEach(id => {
+    document.getElementById('col-'+id).innerHTML = '<div style="text-align:center;color:var(--text-tertiary);padding:16px;font-size:0.72rem;">Running...</div>';
+  });
+  document.getElementById('summary-body').innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-tertiary);">Running...</td></tr>';
+  ['m-skills','m-tier','m-calls','m-latency','m-errors','m-flows','m-answer'].forEach(id => document.getElementById(id).textContent = '---');
+}
+
+// ================================================================
+// Live API Demo
+// ================================================================
+async function runLiveV4Demo(query) {
+  const terminal = document.getElementById('stream-terminal');
+  terminal.innerHTML = '<div class="line prompt" style="opacity:1;">$ finrouter --query "' + _esc(query.slice(0,50)) + '..." --stream --live</div>';
+  terminal.innerHTML += '<div class="line info" style="opacity:1;">[LIVE] Connecting to EFund API...</div>';
+
+  try {
+    // Step 1: Route skills
+    const routeResp = await fetch(API_BASE + '/api/skills/route', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({query, limit: 12}),
+    });
+    const routeData = await routeResp.json();
+    renderRouterPanel(routeData.candidates || [], routeData.best_route);
+    terminal.innerHTML += `<div class="line info" style="opacity:1;">[LIVE] Router found ${routeData.total_candidates} candidates (Tier A: ${routeData.route_summary?.tier_a_count || 0}, B: ${routeData.route_summary?.tier_b_count || 0}, C: ${routeData.route_summary?.tier_c_count || 0})</div>`;
+
+    // Step 2: Three-way comparison
+    const compResp = await fetch(API_BASE + '/api/trace/compare-three', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({query}),
+    });
+    const compData = await compResp.json();
+
+    // Animate streaming for each strategy
+    await animateThreeStrategies(compData, terminal);
+
+    // Render comparison
+    renderComparison(compData);
+
+  } catch(e) {
+    const errMsg = e.message || 'Connection failed';
+    terminal.innerHTML += `<div class="line error" style="opacity:1;">[LIVE-ERR] ${errMsg}</div>`;
+    terminal.innerHTML += `<div class="line info" style="opacity:1;">[FALLBACK] Switching to offline simulation...</div>`;
+    terminal.scrollTop = terminal.scrollHeight;
+    // Run offline demo; prepend error notice to terminal after reset
+    runOfflineV4Demo(query);
+    const saved = terminal.innerHTML;
+    terminal.innerHTML = `<div class="line error" style="opacity:1;">⚠ Live API unavailable (${errMsg}) — showing offline simulation</div>` + saved;
+  }
+}
+
+// ================================================================
+// Offline Demo (same rich simulation, no server needed)
+// ================================================================
+function runOfflineV4Demo(query) {
+  const terminal = document.getElementById('stream-terminal');
+  const qLower = query.toLowerCase();
+
+  // Generate simulated route candidates
+  const candidates = generateOfflineCandidates(query);
+  renderRouterPanel(candidates, candidates[0]);
+
+  terminal.innerHTML = '<div class="line prompt" style="opacity:1;">$ finrouter --query "' + _esc(query.slice(0,55)) + (query.length>55?'...':'') + '" --stream</div>';
+  terminal.innerHTML += `<div class="line info" style="opacity:1;">[ROUTER] Scanning 225 skills across 6 tool categories...</div>`;
+  terminal.innerHTML += `<div class="line info" style="opacity:1;">[ROUTER] Found ${candidates.length} candidate traces (Tier A: ${candidates.filter(c=>c.tier==='A').length}, B: ${candidates.filter(c=>c.tier==='B').length}, C: ${candidates.filter(c=>c.tier==='C').length})</div>`;
+  terminal.innerHTML += `<div class="line info" style="opacity:1;">[ROUTER] Best route: ${candidates[0].name} (score: ${candidates[0].routing_score?.toFixed(3) || '0.412'})</div>`;
+
+  // Simulated three-strategy data
+  const compData = generateOfflineComparison(query);
+  document.getElementById('m-skills').textContent = candidates.length;
+  document.getElementById('m-tier').textContent = candidates[0].tier;
+
+  // Animate
+  animateThreeStrategies(compData, terminal);
+  renderComparison(compData);
+}
+
+function generateOfflineCandidates(query) {
+  const qLower = query.toLowerCase();
+  const baseCandidates = [
+    { rank:1, tier:'A', skill_id:'fsp_4395', name:'Daloopa Financial Pipeline (3-step)',
+      tool_sequence:['discover_companies','discover_company_series','get_company_fundamentals'],
+      tools_detail:[{tool:'discover_companies',category:'financial_direct',estimated_ms:420},{tool:'discover_company_series',category:'financial_direct',estimated_ms:580},{tool:'get_company_fundamentals',category:'financial_direct',estimated_ms:380}],
+      support:3293, consensus_score:0.571, config_count:14, routing_score:0.482,
+      score_breakdown:{kw_score:0.28,fin_score:0.12,seq_score:0.20,cons_score:0.085,support_score:0.065},
+      estimated_total_ms:1380, estimated_tool_calls:3, estimated_error_rate:0.034 },
+    { rank:2, tier:'A', skill_id:'fsp_9595', name:'Company Series → Fundamentals (2-step)',
+      tool_sequence:['discover_company_series','get_company_fundamentals'],
+      tools_detail:[{tool:'discover_company_series',category:'financial_direct',estimated_ms:580},{tool:'get_company_fundamentals',category:'financial_direct',estimated_ms:380}],
+      support:3872, consensus_score:0.429, config_count:11, routing_score:0.398,
+      score_breakdown:{kw_score:0.22,fin_score:0.10,seq_score:0.18,cons_score:0.064,support_score:0.077},
+      estimated_total_ms:960, estimated_tool_calls:2, estimated_error_rate:0.045 },
+    { rank:3, tier:'A', skill_id:'fsp_4194', name:'Multi-Period Fundamental Analysis (4-step)',
+      tool_sequence:['discover_companies','discover_company_series','get_company_fundamentals','get_company_fundamentals'],
+      tools_detail:[{tool:'discover_companies',category:'financial_direct',estimated_ms:420},{tool:'discover_company_series',category:'financial_direct',estimated_ms:580},{tool:'get_company_fundamentals',category:'financial_direct',estimated_ms:380},{tool:'get_company_fundamentals',category:'financial_direct',estimated_ms:350}],
+      support:263, consensus_score:0.286, config_count:8, routing_score:0.365,
+      score_breakdown:{kw_score:0.20,fin_score:0.10,seq_score:0.15,cons_score:0.043,support_score:0.005},
+      estimated_total_ms:1730, estimated_tool_calls:4, estimated_error_rate:0.057 },
+    { rank:4, tier:'B', skill_id:'semantic_3', name:'Corporate Expansion Research',
+      tool_sequence:['WebSearch'], tools_detail:[{tool:'WebSearch',category:'web_search',estimated_ms:3000}],
+      support:4677, consensus_score:0.333, config_count:9, routing_score:0.341,
+      score_breakdown:{kw_score:0.14,fin_score:0.06,seq_score:0.10,cons_score:0.050,support_score:0.094},
+      estimated_total_ms:3000, estimated_tool_calls:1, estimated_error_rate:0.053 },
+    { rank:5, tier:'B', skill_id:'semantic_8', name:'Financial Web Search → Fetch Pipeline',
+      tool_sequence:['WebSearch','WebFetch'], tools_detail:[{tool:'WebSearch',category:'web_search',estimated_ms:3000},{tool:'WebFetch',category:'web_fetch',estimated_ms:2000}],
+      support:2850, consensus_score:0.375, config_count:7, routing_score:0.312,
+      score_breakdown:{kw_score:0.12,fin_score:0.06,seq_score:0.12,cons_score:0.056,support_score:0.057},
+      estimated_total_ms:5000, estimated_tool_calls:2, estimated_error_rate:0.050 },
+    { rank:6, tier:'B', skill_id:'seq_42', name:'WebSearch ×3 → Fundamentals (Hybrid)',
+      tool_sequence:['WebSearch','WebSearch','WebSearch','discover_companies','get_company_fundamentals'],
+      tools_detail:[{tool:'WebSearch',category:'web_search',estimated_ms:3000},{tool:'WebSearch',category:'web_search',estimated_ms:3000},{tool:'WebSearch',category:'web_search',estimated_ms:3000},{tool:'discover_companies',category:'financial_direct',estimated_ms:420},{tool:'get_company_fundamentals',category:'financial_direct',estimated_ms:380}],
+      support:580, consensus_score:0.250, config_count:5, routing_score:0.285,
+      score_breakdown:{kw_score:0.10,fin_score:0.05,seq_score:0.10,cons_score:0.038,support_score:0.012},
+      estimated_total_ms:9800, estimated_tool_calls:5, estimated_error_rate:0.060 },
+    { rank:7, tier:'B', skill_id:'p3_t1', name:'P3 Hierarchical: Financial Data Pipeline',
+      tool_sequence:['discover_companies','discover_company_series','get_company_fundamentals','WebFetch'],
+      tools_detail:[{tool:'discover_companies',category:'financial_direct',estimated_ms:310},{tool:'discover_company_series',category:'financial_direct',estimated_ms:430},{tool:'get_company_fundamentals',category:'financial_direct',estimated_ms:280},{tool:'WebFetch',category:'web_fetch',estimated_ms:1500}],
+      support:420, consensus_score:0.450, config_count:6, routing_score:0.278,
+      score_breakdown:{kw_score:0.09,fin_score:0.05,seq_score:0.14,cons_score:0.068,support_score:0.008},
+      estimated_total_ms:2520, estimated_tool_calls:4, estimated_error_rate:0.044 },
+    { rank:8, tier:'C', skill_id:'seq_15', name:'WebSearch ×4 (Exploratory)',
+      tool_sequence:['WebSearch','WebSearch','WebSearch','WebSearch'],
+      tools_detail:[{tool:'WebSearch',category:'web_search',estimated_ms:3000},{tool:'WebSearch',category:'web_search',estimated_ms:3000},{tool:'WebSearch',category:'web_search',estimated_ms:3000},{tool:'WebSearch',category:'web_search',estimated_ms:3000}],
+      support:890, consensus_score:0.143, config_count:3, routing_score:0.210,
+      score_breakdown:{kw_score:0.06,fin_score:0.04,seq_score:0.05,cons_score:0.021,support_score:0.018},
+      estimated_total_ms:12000, estimated_tool_calls:4, estimated_error_rate:0.068 },
+    { rank:9, tier:'C', skill_id:'seq_27', name:'Google Search → Discover → Fetch',
+      tool_sequence:['google_search','discover_companies','WebFetch'],
+      tools_detail:[{tool:'google_search',category:'web_search',estimated_ms:3000},{tool:'discover_companies',category:'financial_direct',estimated_ms:420},{tool:'WebFetch',category:'web_fetch',estimated_ms:2000}],
+      support:320, consensus_score:0.200, config_count:2, routing_score:0.178,
+      score_breakdown:{kw_score:0.05,fin_score:0.03,seq_score:0.06,cons_score:0.030,support_score:0.006},
+      estimated_total_ms:5420, estimated_tool_calls:3, estimated_error_rate:0.064 },
+    { rank:10, tier:'C', skill_id:'seq_33', name:'File Search → Bash Pipeline',
+      tool_sequence:['Glob','Grep','Read','Bash'],
+      tools_detail:[{tool:'Glob',category:'file_ops',estimated_ms:150},{tool:'Grep',category:'file_ops',estimated_ms:200},{tool:'Read',category:'file_ops',estimated_ms:100},{tool:'Bash',category:'file_ops',estimated_ms:500}],
+      support:450, consensus_score:0.167, config_count:2, routing_score:0.145,
+      score_breakdown:{kw_score:0.03,fin_score:0.03,seq_score:0.04,cons_score:0.025,support_score:0.009},
+      estimated_total_ms:950, estimated_tool_calls:4, estimated_error_rate:0.070 },
+    { rank:11, tier:'C', skill_id:'semantic_12', name:'News Sentiment Extraction',
+      tool_sequence:['WebSearch','WebFetch','WebFetch'],
+      tools_detail:[{tool:'WebSearch',category:'web_search',estimated_ms:3000},{tool:'WebFetch',category:'web_fetch',estimated_ms:2000},{tool:'WebFetch',category:'web_fetch',estimated_ms:2000}],
+      support:680, consensus_score:0.125, config_count:1, routing_score:0.122,
+      score_breakdown:{kw_score:0.04,fin_score:0.02,seq_score:0.05,cons_score:0.019,support_score:0.014},
+      estimated_total_ms:7000, estimated_tool_calls:3, estimated_error_rate:0.070 },
+    { rank:12, tier:'C', skill_id:'p3_e12', name:'P3 Evolved: Parameterized Multi-Company',
+      tool_sequence:['discover_companies','discover_company_series','get_company_fundamentals','get_company_fundamentals','WebSearch'],
+      tools_detail:[{tool:'discover_companies',category:'financial_direct',estimated_ms:310},{tool:'discover_company_series',category:'financial_direct',estimated_ms:430},{tool:'get_company_fundamentals',category:'financial_direct',estimated_ms:280},{tool:'get_company_fundamentals',category:'financial_direct',estimated_ms:260},{tool:'WebSearch',category:'web_search',estimated_ms:2250}],
+      support:180, consensus_score:0.300, config_count:4, routing_score:0.105,
+      score_breakdown:{kw_score:0.02,fin_score:0.03,seq_score:0.06,cons_score:0.045,support_score:0.004},
+      estimated_total_ms:3530, estimated_tool_calls:5, estimated_error_rate:0.056 },
+  ];
+
+  // Adjust financial term relevance based on query content
+  const hasRevenue = qLower.includes('revenue') || qLower.includes('income') || qLower.includes('growth');
+  const hasEps = qLower.includes('eps') || qLower.includes('earnings per share');
+  const hasCompare = qLower.includes('compare') || qLower.includes('versus');
+  const hasNvidia = qLower.includes('nvidia') || qLower.includes('nvda');
+  const hasApple = qLower.includes('apple') || qLower.includes('aapl');
+  const hasTesla = qLower.includes('tesla') || qLower.includes('tsla');
+
+  // Boost financial pipeline scores for financial queries
+  if (hasRevenue || hasEps) {
+    baseCandidates[0].routing_score = 0.512;
+    baseCandidates[1].routing_score = 0.425;
+    baseCandidates[2].routing_score = 0.390;
+    baseCandidates.sort((a, b) => b.routing_score - a.routing_score);
+    baseCandidates.forEach((c, i) => { c.rank = i + 1; });
+  }
+
+  return baseCandidates;
+}
+
+function generateOfflineComparison(query) {
+  const qLower = query.toLowerCase();
+
+  // Skill-Aware: efficient, ~3 calls, ~2s
+  const saSteps = [
+    {tool_name:'discover_companies',category:'financial_direct',duration_ms:420,is_error:false,output_preview:'{"company_id":320193,"company_name":"Apple Inc.","ticker":"AAPL"}'},
+    {tool_name:'discover_company_series',category:'financial_direct',duration_ms:580,is_error:false,output_preview:'{"series_ids":["RETAIL_REV","NET_INC_Q","EPS_DILUTED","REV_GROWTH_YOY"],"series_count":4}'},
+    {tool_name:'get_company_fundamentals',category:'financial_direct',duration_ms:380,is_error:false,output_preview:'{"Revenue_FY2024":"$391,035,000,000","NetIncome_FY2024":"$93,736,000,000","EPS":"$6.43"}'},
+  ];
+  let saErrors = Math.random() < 0.25 ? 1 : 0;
+  if (saErrors) saSteps[1].is_error = true;
+
+  // ReAct: 14 calls, ~41s
+  const reactSteps = [
+    {tool_name:'WebSearch',category:'web_search',duration_ms:3100,is_error:false},
+    {tool_name:'WebSearch',category:'web_search',duration_ms:3200,is_error:Math.random()<0.08},
+    {tool_name:'google_search',category:'web_search',duration_ms:2900,is_error:false},
+    {tool_name:'WebSearch',category:'web_search',duration_ms:3100,is_error:Math.random()<0.08},
+    {tool_name:'WebFetch',category:'web_fetch',duration_ms:2100,is_error:false},
+    {tool_name:'WebSearch',category:'web_search',duration_ms:3050,is_error:Math.random()<0.08},
+    {tool_name:'discover_companies',category:'financial_direct',duration_ms:550,is_error:false},
+    {tool_name:'WebSearch',category:'web_search',duration_ms:3100,is_error:Math.random()<0.08},
+    {tool_name:'google_search',category:'web_search',duration_ms:2950,is_error:false},
+    {tool_name:'WebFetch',category:'web_fetch',duration_ms:2000,is_error:false},
+    {tool_name:'discover_company_series',category:'financial_direct',duration_ms:636,is_error:false},
+    {tool_name:'WebSearch',category:'web_search',duration_ms:3100,is_error:Math.random()<0.08},
+    {tool_name:'get_company_fundamentals',category:'financial_direct',duration_ms:979,is_error:false},
+    {tool_name:'WebFetch',category:'web_fetch',duration_ms:2100,is_error:false},
+  ];
+  let reactErrors = reactSteps.filter(s=>s.is_error).length;
+  const reactTotalMs = reactSteps.reduce((a,s)=>a+s.duration_ms,0);
+
+  // Hybrid-P3: ~4 calls, ~3s, evolved
+  const hybridSteps = [
+    {tool_name:'discover_companies',category:'financial_direct',duration_ms:310,is_error:false,output_preview:'{"company_id":320193,"company_name":"Apple Inc.","ticker":"AAPL"}',p3_optimization:'hierarchical_route'},
+    {tool_name:'discover_company_series',category:'financial_direct',duration_ms:430,is_error:false,output_preview:'{"series_ids":["RETAIL_REV","NET_INC_Q","EPS_DILUTED","REV_GROWTH_YOY"],"series_count":4}',p3_optimization:'parameter_cache'},
+    {tool_name:'get_company_fundamentals',category:'financial_direct',duration_ms:280,is_error:false,output_preview:'{"Revenue_FY2024":"$391,035,000,000","NetIncome_FY2024":"$93,736,000,000","EPS":"$6.43"}',p3_optimization:'parameter_cache'},
+    {tool_name:'WebFetch',category:'web_fetch',duration_ms:1500,is_error:false,output_preview:'{"content":"Verified: Apple FY2024 10-K filing confirms $391.04B revenue"}',p3_optimization:'cross_validation'},
+  ];
+  let hybridErrors = Math.random() < 0.15 ? 1 : 0;
+  if (hybridErrors && hybridSteps.length > 0) hybridSteps[hybridSteps.length - 1].is_error = true;
+
+  return {
+    strategies: {
+      skill_aware: {
+        strategy:'skill_aware', strategy_name:'Skill-Aware Agent', description:'Mined skills from FinRetrieval traces',
+        color:'#005096', bg:'#e8f0f8', steps: saSteps, total_calls: saSteps.length,
+        total_duration_ms: saSteps.reduce((a,s)=>a+s.duration_ms,0),
+        error_count: saErrors, error_rate: parseFloat((saErrors/saSteps.length).toFixed(4)),
+        coverage_score:0.9604, confidence_score:0.5881, consensus_score:0.2791,
+      },
+      react: {
+        strategy:'react', strategy_name:'ReAct Agent (Baseline)', description:'Traditional reasoning loop without skill memory',
+        color:'#C41230', bg:'#fef0f2', steps: reactSteps, total_calls: reactSteps.length,
+        total_duration_ms: reactTotalMs,
+        error_count: reactErrors, error_rate: parseFloat((reactErrors/reactSteps.length).toFixed(4)),
+        coverage_score:0.90, confidence_score:0.35, consensus_score:0.0,
+      },
+      hybrid_p3: {
+        strategy:'hybrid_p3', strategy_name:'Hybrid-P3 (Evolved)', description:'Phase 3: hierarchical + parameterized + evolutionary',
+        color:'#1a8c5e', bg:'#edf8f3', steps: hybridSteps, total_calls: hybridSteps.length,
+        total_duration_ms: hybridSteps.reduce((a,s)=>a+s.duration_ms,0),
+        error_count: hybridErrors, error_rate: parseFloat((hybridErrors/hybridSteps.length).toFixed(4)),
+        coverage_score:0.9604, confidence_score:0.6458, consensus_score:0.3088,
+        p3_features: ['Hierarchical routing','Parameter reuse','Evolutionary selection'],
+      }
+    },
+    improvement: {
+      skill_vs_react: {
+        latency_reduction_pct: parseFloat(((1 - saSteps.reduce((a,s)=>a+s.duration_ms,0)/reactTotalMs) * 100).toFixed(1)),
+        call_reduction_pct: parseFloat(((1 - saSteps.length/reactSteps.length) * 100).toFixed(1)),
+        error_reduction_pct: parseFloat(((1 - saErrors/Math.max(reactErrors,1)) * 100).toFixed(1)),
+      },
+      hybrid_vs_react: {
+        latency_reduction_pct: parseFloat(((1 - hybridSteps.reduce((a,s)=>a+s.duration_ms,0)/reactTotalMs) * 100).toFixed(1)),
+        call_reduction_pct: parseFloat(((1 - hybridSteps.length/reactSteps.length) * 100).toFixed(1)),
+        error_reduction_pct: parseFloat(((1 - hybridErrors/Math.max(reactErrors,1)) * 100).toFixed(1)),
+      },
+      hybrid_vs_skill: { confidence_delta: 0.0577, consensus_delta: 0.0297 },
+    }
+  };
+}
+
+// ================================================================
+// Render Router Panel
+// ================================================================
+function renderRouterPanel(candidates, bestRoute) {
+  const grid = document.getElementById('router-grid');
+  const summary = document.getElementById('router-summary');
+  const tierACount = candidates.filter(c => c.tier === 'A').length;
+  const tierBCount = candidates.filter(c => c.tier === 'B').length;
+  const tierCCount = candidates.filter(c => c.tier === 'C').length;
+
+  summary.innerHTML = `<span style="color:var(--green);">Tier A: ${tierACount}</span> · <span style="color:var(--gold);">Tier B: ${tierBCount}</span> · <span style="color:var(--text-tertiary);">Tier C: ${tierCCount}</span> · <strong>Best:</strong> ${bestRoute?.name || '—'}`;
+
+  grid.innerHTML = candidates.map((c, i) => {
+    const isBest = c.rank === 1;
+    const tier = c.tier || 'C';
+    const tierClass = 'tier-' + tier.toLowerCase();
+    const tierLabel = 'Tier ' + tier;
+
+    const toolsHtml = (c.tool_sequence || []).map((t, j) =>
+      '<span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--accent);">' + t + '</span>' +
+      (j < (c.tool_sequence||[]).length-1 ? ' <span style="color:var(--text-tertiary);">→</span> ' : '')
+    ).join('');
+
+    return `<div class="router-card${isBest ? ' best' : ''}" onclick="highlightRoute(this)" title="Click to select this route">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-weight:600;font-size:0.72rem;color:var(--text);">#${c.rank} ${(c.name||'Unknown Skill').slice(0,28)}${(c.name||'').length>28?'...':''}</span>
+        <span class="tier-badge ${tierClass}">${tierLabel}</span>
+      </div>
+      <div style="margin-bottom:4px;line-height:1.5;">${toolsHtml}</div>
+      <div style="display:flex;gap:10px;font-size:0.62rem;color:var(--text-tertiary);">
+        <span>Score: ${(c.routing_score||0).toFixed(3)}</span>
+        <span>~${c.estimated_total_ms||0}ms</span>
+        <span>${c.estimated_tool_calls||0} calls</span>
+      </div>
+      <div style="margin-top:4px;font-size:0.6rem;color:var(--text-tertiary);">
+        KW:${(c.score_breakdown?.kw_score||0).toFixed(2)} Fin:${(c.score_breakdown?.fin_score||0).toFixed(2)} Seq:${(c.score_breakdown?.seq_score||0).toFixed(2)} Cons:${(c.score_breakdown?.cons_score||0).toFixed(2)}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function highlightRoute(card) {
+  document.querySelectorAll('.router-card').forEach(c => c.classList.remove('best'));
+  card.classList.add('best');
+}
+
+// ================================================================
+// Animate Three Strategies (streaming effect)
+// ================================================================
+async function animateThreeStrategies(data, terminal) {
+  const strategies = data.strategies;
+  const keys = ['skill_aware', 'react', 'hybrid_p3'];
+  const colIds = ['col-sa', 'col-react', 'col-hybrid'];
+
+  // Find max steps for animation timing
+  const maxSteps = Math.max(...keys.map(k => (strategies[k]?.steps || []).length));
+
+  // Initialize columns
+  keys.forEach((key, idx) => {
+    const s = strategies[key];
+    document.getElementById(colIds[idx]).innerHTML = `
+      <div style="padding:8px 0;font-size:0.7rem;color:var(--green);font-weight:600;">▶ Executing...</div>
+      <div id="steps-${key}" style="max-height:300px;overflow-y:auto;"></div>
+      <div style="margin-top:8px;">
+        <div class="metric-row"><span class="metric-label">Calls</span><span class="metric-value" id="live-calls-${key}">0/${s.total_calls}</span></div>
+        <div class="metric-row"><span class="metric-label">Latency</span><span class="metric-value" id="live-lat-${key}">0ms</span></div>
+      </div>`;
+  });
+
+  // Animate step by step across all three columns
+  for (let i = 0; i < maxSteps; i++) {
+    await sleep(350); // Simulated streaming delay
+
+    keys.forEach((key, idx) => {
+      const s = strategies[key];
+      if (i < (s.steps || []).length) {
+        const step = s.steps[i];
+        const stepDiv = document.getElementById('steps-' + key);
+        if (!stepDiv) return;
+        const errClass = step.is_error ? 'err' : 'ok';
+        const icon = step.is_error ? '✗' : '✓';
+        const p3Tag = step.p3_optimization ? ` <span style="font-size:0.55rem;color:#1a8c5e;">[${step.p3_optimization}]</span>` : '';
+
+        stepDiv.insertAdjacentHTML('beforeend', `<div class="mini-step ${errClass}">
+          <span>${icon} ${_esc(step.tool_name)}${p3Tag}</span>
+          <span style="color:var(--text-tertiary);">${step.duration_ms}ms</span>
+        </div>`);
+        stepDiv.scrollTop = stepDiv.scrollHeight;
+
+        // Update live metrics
+        const cumCalls = i + 1;
+        const cumMs = s.steps.slice(0, i+1).reduce((a,st)=>a+st.duration_ms, 0);
+        document.getElementById('live-calls-' + key).textContent = cumCalls + '/' + s.total_calls;
+        document.getElementById('live-lat-' + key).textContent = (cumMs/1000).toFixed(2) + 's';
+      }
+    });
+
+    // Terminal streaming
+    if (i < (strategies['skill_aware']?.steps || []).length) {
+      const saStep = strategies['skill_aware'].steps[i];
+      terminal.insertAdjacentHTML('beforeend', `<div class="line info" style="opacity:1;">[EXEC] ${_esc(saStep.tool_name)} → ${saStep.duration_ms}ms ${saStep.is_error ? '⚠ ERR' : '✓'}</div>`);
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+  }
+
+  // Final summary
+  await sleep(200);
+  terminal.insertAdjacentHTML('beforeend', `<div class="line result" style="opacity:1;">[DONE] All 3 strategies completed. See comparison below.</div>`);
+  if (data.llm_answer) {
+    terminal.insertAdjacentHTML('beforeend', `<div class="line result" style="opacity:1;color:#00ff88;">[LLM] EFundGPT: ${_esc(String(data.llm_answer).slice(0, 200))}</div>`);
+  }
+  terminal.scrollTop = terminal.scrollHeight;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ================================================================
+// Render Three-Column Comparison
+// ================================================================
+function renderComparison(data) {
+  if (!data || !data.strategies) { console.warn('[renderComparison] No strategy data'); return; }
+  const strategies = data.strategies;
+  const imp = data.improvement || {};
+  const keys = ['skill_aware', 'react', 'hybrid_p3'];
+  const colIds = ['col-sa', 'col-react', 'col-hybrid'];
+
+  keys.forEach((key, idx) => {
+    const s = strategies[key];
+    if (!s) return;
+    const eRate = ((s.error_rate || 0) * 100).toFixed(1);
+    document.getElementById(colIds[idx]).innerHTML = `
+      <div style="padding:4px 0;font-size:0.68rem;color:var(--text-tertiary);">${s.description}</div>
+      <div style="margin:4px 0;">${(s.steps||[]).map(st =>
+        `<div class="mini-step ${st.is_error?'err':'ok'}">
+          <span>${st.is_error?'✗':'✓'} ${st.tool_name}</span>
+          <span style="color:var(--text-tertiary);">${st.duration_ms}ms</span>
+        </div>`
+      ).join('')}</div>
+      <div class="metric-row"><span class="metric-label" data-i18n="col_tool_calls">Tool Calls</span><span class="metric-value">${s.total_calls}</span></div>
+      <div class="metric-row"><span class="metric-label" data-i18n="col_latency">Latency</span><span class="metric-value">${(s.total_duration_ms/1000).toFixed(2)}s</span></div>
+      <div class="metric-row"><span class="metric-label" data-i18n="col_error_rate">Error Rate</span><span class="metric-value" style="color:${s.error_rate>0.06?'var(--red)':'var(--green)'}">${eRate}%</span></div>
+      <div class="metric-row"><span class="metric-label" data-i18n="col_coverage">Coverage</span><span class="metric-value">${(s.coverage_score*100).toFixed(1)}%</span></div>
+      <div class="metric-row"><span class="metric-label" data-i18n="col_confidence">Confidence</span><span class="metric-value">${(s.confidence_score*100).toFixed(2)}%</span></div>
+      <div class="metric-row"><span class="metric-label" data-i18n="col_consensus">Consensus</span><span class="metric-value">${s.consensus_score > 0 ? (s.consensus_score*100).toFixed(2)+'%' : 'N/A'}</span></div>
+      ${s.p3_features ? '<div style="margin-top:8px;font-size:0.62rem;color:var(--green);">✦ '+s.p3_features.join(' · ')+'</div>' : ''}`;
+  });
+
+  // Update summary table
+  const sa = strategies.skill_aware;
+  const react = strategies.react;
+  const hybrid = strategies.hybrid_p3;
+
+  document.getElementById('summary-body').innerHTML = `
+    <tr>
+      <td data-i18n="sum_latency">Latency (ms)</td>
+      <td>${sa.total_duration_ms}</td>
+      <td style="color:var(--red);">${react.total_duration_ms}</td>
+      <td style="color:var(--green);">${hybrid.total_duration_ms}</td>
+      <td class="winner">↓ ${imp.hybrid_vs_react.latency_reduction_pct}% vs ReAct</td>
+    </tr>
+    <tr>
+      <td data-i18n="sum_calls">Tool Calls</td>
+      <td>${sa.total_calls}</td>
+      <td style="color:var(--red);">${react.total_calls}</td>
+      <td style="color:var(--green);">${hybrid.total_calls}</td>
+      <td class="winner">↓ ${imp.hybrid_vs_react.call_reduction_pct}% vs ReAct</td>
+    </tr>
+    <tr>
+      <td data-i18n="sum_error">Error Rate</td>
+      <td>${(sa.error_rate*100).toFixed(1)}%</td>
+      <td style="color:var(--red);">${(react.error_rate*100).toFixed(1)}%</td>
+      <td style="color:var(--green);">${(hybrid.error_rate*100).toFixed(1)}%</td>
+      <td class="winner">↓ ${imp.hybrid_vs_react.error_reduction_pct}% vs ReAct</td>
+    </tr>
+    <tr>
+      <td data-i18n="sum_coverage">Coverage Score</td>
+      <td>${(sa.coverage_score*100).toFixed(1)}%</td>
+      <td>${(react.coverage_score*100).toFixed(1)}%</td>
+      <td class="highlight">${(hybrid.coverage_score*100).toFixed(1)}%</td>
+      <td>P3 maintains coverage</td>
+    </tr>
+    <tr>
+      <td data-i18n="sum_confidence">Confidence Score</td>
+      <td>${(sa.confidence_score*100).toFixed(2)}%</td>
+      <td style="color:var(--red);">${(react.confidence_score*100).toFixed(2)}%</td>
+      <td class="highlight">${(hybrid.confidence_score*100).toFixed(2)}%</td>
+      <td class="winner">↑ +${(imp.hybrid_vs_skill.confidence_delta*100).toFixed(2)}%</td>
+    </tr>
+    <tr>
+      <td data-i18n="sum_consensus">Consensus Score</td>
+      <td>${(sa.consensus_score*100).toFixed(2)}%</td>
+      <td style="color:var(--red);">—</td>
+      <td class="highlight">${(hybrid.consensus_score*100).toFixed(2)}%</td>
+      <td class="winner">↑ +${(imp.hybrid_vs_skill.consensus_delta*100).toFixed(2)}pp</td>
+    </tr>
+  `;
+
+  // Update side metrics
+  document.getElementById('m-calls').textContent = sa.total_calls;
+  document.getElementById('m-latency').textContent = (sa.total_duration_ms/1000).toFixed(2) + 's';
+  document.getElementById('m-errors').textContent = (sa.error_rate*100).toFixed(1) + '%';
+  document.getElementById('m-flows').textContent = (sa.total_calls - 1);
+  const llmAns = data.llm_answer;
+  if (llmAns) {
+    document.getElementById('m-answer').textContent = String(llmAns).slice(0, 200);
+    document.getElementById('m-answer').style.color = 'var(--green)';
+  } else {
+    document.getElementById('m-answer').textContent = 'Extracted from ' + sa.total_calls + ' tool outputs';
+    document.getElementById('m-answer').style.color = '';
+  }
+
+  // Re-translate if in Chinese mode
+  if (currentLang === 'zh') {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (!key || !I18N['zh'][key]) return;
+      if (key === 'about_data_text' || key === 'about_problem_text' || key === 'hero_title' || key === 'hero_sub') {
+        el.innerHTML = I18N['zh'][key];
+      } else {
+        el.textContent = I18N['zh'][key];
+      }
+    });
+  }
+}
+
+// ================================================================
+// Initialization
+// ================================================================
+function init() {
+  // Set initial preset
+  const initQuery = PRESETS['nvda'];
+  document.getElementById('demo-query').value = initQuery;
+
+  // Run initial demo on load
+  setTimeout(() => runOfflineV4Demo(initQuery), 500);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
