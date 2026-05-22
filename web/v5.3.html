@@ -818,14 +818,13 @@ async function runQuery() {
   btn.disabled = true;
 
   // Reset UI
-  document.getElementById('pipeline-steps').innerHTML = '';
-  document.getElementById('pipeline-empty').style.display = 'none';
   document.getElementById('answer-box').style.display = 'none';
   document.getElementById('router-summary').textContent = '';
   document.getElementById('router-reasoning').style.display = 'none';
   document.getElementById('progress-wrap').style.display = 'block';
   document.getElementById('progress-fill').style.width = '0%';
   document.getElementById('progress-text').textContent = '0/0';
+  document.getElementById('pipeline-steps').innerHTML = '<div class="empty-state" id="pipeline-empty"><div class="icon">⚡</div><p>' + t('empty_pipeline') + '</p></div>';
   updateMetrics(null);
 
   try {
@@ -1082,7 +1081,10 @@ function updateMetrics(m) {
   errEl.textContent = m ? m.errors : '-';
   errEl.className = 'big-num' + (m && m.errors > 0 ? ' red' : '');
   const confEl = document.getElementById('m-confidence');
-  const confPct = m ? (m.confidence > 1 ? m.confidence : (m.confidence * 100)) : null;
+  var confPct = null;
+  if (m && m.confidence != null && !isNaN(m.confidence)) {
+    confPct = m.confidence > 1 ? m.confidence : (m.confidence * 100);
+  }
   confEl.textContent = confPct != null ? confPct.toFixed(0) + '%' : '-';
   confEl.className = 'big-num' + (confPct != null && confPct >= 90 ? '' : (confPct != null && confPct >= 70 ? ' gold' : ''));
   // Data sources
@@ -1102,15 +1104,17 @@ function _esc(str) {
 
 function markdownToHtml(md) {
   if (!md) return '';
-  let html = _esc(md);
+  var html = _esc(md);
   // Bold
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   // Headers
   html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
   html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
-  // Bullet points
+  // Bullet points — wrap consecutive <li> blocks in <ul>
   html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
-  html = html.replace(/(<li>.*<\/li>)/s, function(m) { return '<ul>' + m + '</ul>'; });
+  html = html.replace(/((?:<li>[\s\S]*?<\/li>\s*)+)/g, function(m) {
+    return '<ul>' + m + '</ul>';
+  });
   // Line breaks
   html = html.replace(/\n\n/g, '<br><br>');
   html = html.replace(/\n/g, '<br>');

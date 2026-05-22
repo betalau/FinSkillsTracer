@@ -335,7 +335,6 @@ def _execute_query(query: str):
 
         rate_limit_bucket = tool_info.get("api_source", canonical)
         data_source = "live"
-        note = ""
 
         start_ms = time.time() * 1000
 
@@ -358,7 +357,6 @@ def _execute_query(query: str):
                 data_source = "error"
                 total_errors += 1
             else:
-                _RATE_LIMITER.record_call(rate_limit_bucket)
                 executor_fn = REAL_TOOL_EXECUTORS.get(canonical)
                 if executor_fn:
                     try:
@@ -367,6 +365,7 @@ def _execute_query(query: str):
                             data_source = "error"
                             total_errors += 1
                         else:
+                            _RATE_LIMITER.record_call(rate_limit_bucket)
                             _CACHE.set(cache_key, output)
                     except Exception as e:
                         output = {"error": str(e)}
@@ -392,7 +391,6 @@ def _execute_query(query: str):
             "duration_ms": elapsed_ms,
             "is_error": data_source == "error",
             "error_message": output.get("error", "") if isinstance(output, dict) else "",
-            "note": note,
         })
 
         # Update progress
