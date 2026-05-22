@@ -45,9 +45,10 @@ The optimization is organized in three phases, each improving a different aspect
 # Install dependencies
 pip install flask flask-cors python-dotenv openai requests
 
-# Configure API keys in .env
-# Required: LLM_PROVIDER, DEEPSEEK_API_KEY (or EFund/OpenAI)
-# Optional: ALPHAVANTAGE_API_KEY, SERPAPI_KEY (for real financial data)
+# Configure API keys
+cp .env.sample .env
+# Edit .env — set LLM_PROVIDER and at least one LLM API key
+# Optional: ALPHAVANTAGE_API_KEY, SERPAPI_KEY for real financial data
 
 # Start the server (port 5003)
 python web/server_5.3.py
@@ -357,35 +358,33 @@ Parameters classified: `company_id` = **derived**, `keywords` = **variable**, `p
 
 ## Environment
 
-Create `.env` from the template:
+Copy `.env.sample` to `.env` and fill in your API keys:
 
-```env
-LLM_PROVIDER=deepseek
-
-# DeepSeek (default for v5.3)
-DEEPSEEK_BASE_URL=https://api.deepseek.com
-DEEPSEEK_API_KEY=your_deepseek_api_key_here
-
-# EFund (易方达) — enterprise LLM
-EFUNDS_BASE_URL=https://aigc.efunds.com.cn/v1
-EFUNDS_API_KEY=your_efund_api_key_here
-EFUNDS_USER=SX-your_username
-
-# OpenAI (optional)
-# OPENAI_BASE_URL=https://api.openai.com/v1
-# OPENAI_API_KEY=your_openai_key
-
-# Real Financial Data APIs (v5.3)
-ALPHAVANTAGE_API_KEY=your_alphavantage_key    # Free tier: 5 calls/min
-SERPAPI_KEY=your_serpapi_key                  # 100 calls/month free
+```bash
+cp .env.sample .env
 ```
 
-**API Key Notes for v5.3:**
-- **LLM key** (DeepSeek/EFund/OpenAI) — required for skill routing + answer synthesis
-- **Alpha Vantage** — free tier at [alphavantage.co](https://www.alphavantage.co/support/#api-key), 5 calls/min shared across all tool types
-- **SerpAPI** — free tier at [serpapi.com](https://serpapi.com/), 100 searches/month
+### LLM Provider (required)
 
-The server degrades gracefully without financial API keys — tools requiring missing keys return config errors rather than crashing.
+Pick one provider — set `LLM_PROVIDER` and its corresponding key:
+
+| Provider | Variable | Get Key At |
+|---|---|---|
+| **DeepSeek** (default) | `DEEPSEEK_API_KEY` | [platform.deepseek.com](https://platform.deepseek.com/api_keys) |
+| **EFund** (易方达) | `EFUNDS_API_KEY` + `EFUNDS_USER` | Internal EFundGPT platform |
+| **OpenAI** | `OPENAI_API_KEY` | [platform.openai.com](https://platform.openai.com/api-keys) |
+| **Custom** | `CUSTOM_API_KEY` + `CUSTOM_BASE_URL` + `CUSTOM_MODEL` | Any OpenAI-compatible endpoint |
+
+### Financial Data APIs (optional, v5.3)
+
+Without these, the real-time tool pipeline falls back to web search only:
+
+| API | Variable | Free Tier | Get Key At |
+|---|---|---|---|
+| **Alpha Vantage** | `ALPHAVANTAGE_API_KEY` | 5 calls/min | [alphavantage.co](https://www.alphavantage.co/support/#api-key) |
+| **SerpAPI** | `SERPAPI_KEY` | 100 searches/month | [serpapi.com](https://serpapi.com/) |
+
+The server degrades gracefully — tools requiring missing API keys return config errors and the pipeline skips them rather than crashing.
 
 ---
 
